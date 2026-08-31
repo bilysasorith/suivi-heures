@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Suivi des heures — Infogreffe</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <span class="brand-badge">⏱️ Suivi de prestation</span>
+        <h1><span id="titrePrestataire">Prestataire</span> · <span class="client" id="titreClient">Client</span></h1>
+        <p class="subtitle" id="sousTitre"></p>
+      </div>
+      <div class="maj" id="maj"></div>
+    </header>
+
+    <section class="cards">
+      <!-- Semaine en cours -->
+      <div class="card week">
+        <div class="label">Cette semaine</div>
+        <div class="big">
+          <span id="semaineHeures">0 h</span>
+          <span class="obj" id="semaineObjectif">/ 10 h</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" id="semaineBar"></div></div>
+        <div class="sub" id="semaineReste"></div>
+        <div class="sub" id="semainePeriode"></div>
+      </div>
+
+      <!-- Avance / retard -->
+      <div class="card avance" id="cardAvance">
+        <div class="label">Avance cumulée</div>
+        <div class="big inline">
+          <span id="avanceValeur">0 h</span>
+          <span class="lbl" id="avanceLabel"></span>
+        </div>
+        <div class="sub" id="avanceDetail"></div>
+      </div>
+    </section>
+
+    <section class="cards">
+      <div class="card">
+        <div class="label">Total heures</div>
+        <div class="big" id="totalHeures">0 h</div>
+        <div class="sub">depuis le début de la mission</div>
+      </div>
+      <div class="card">
+        <div class="label">Montant gagné</div>
+        <div class="big" id="totalGains">0 €</div>
+        <div class="sub">total heures × tarif horaire</div>
+      </div>
+      <div class="card">
+        <div class="label">Semaines écoulées</div>
+        <div class="big" id="nbSemaines">0</div>
+        <div class="sub">semaine en cours incluse</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Heures par semaine</h2>
+      <div class="chart" id="chart"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Récapitulatif par semaine</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Semaine</th>
+              <th class="right">Fait</th>
+              <th class="right">Objectif</th>
+              <th class="right">Statut</th>
+              <th class="right">Montant</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyWeeks"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Détail des séances</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th class="right">Heures</th>
+              <th>Description</th>
+              <th class="right">Montant</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyLog"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      Données saisies dans <code>data.js</code> · Site statique hébergé sur GitHub Pages
+    </footer>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
