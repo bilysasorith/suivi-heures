@@ -4,75 +4,121 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Suivi des heures — Infogreffe</title>
+  <meta name="description" content="Suivi de prestation freelance : heures réalisées, avance et montant." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>" />
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <div>
-        <span class="brand-badge">⏱️ Suivi de prestation</span>
-        <h1><span id="titrePrestataire">Prestataire</span> · <span class="client" id="titreClient">Client</span></h1>
-        <p class="subtitle" id="sousTitre"></p>
+
+    <header class="site-header">
+      <div class="identity">
+        <div class="monogram" id="monogram">B</div>
+        <div>
+          <div class="eyebrow">Suivi de prestation freelance</div>
+          <h1><span id="titrePrestataire">Prestataire</span> <span class="sep">×</span> <span class="client" id="titreClient">Client</span></h1>
+          <p class="subtitle" id="sousTitre"></p>
+        </div>
       </div>
-      <div class="maj" id="maj"></div>
+      <div class="header-side">
+        <div class="status-chip" id="statusChip">
+          <span class="dot"></span><span id="statusChipText">—</span>
+        </div>
+        <div class="maj" id="maj"></div>
+      </div>
     </header>
 
-    <section class="cards">
-      <!-- Semaine en cours -->
-      <div class="card week">
-        <div class="label">Cette semaine</div>
-        <div class="big">
-          <span id="semaineHeures">0 h</span>
-          <span class="obj" id="semaineObjectif">/ 10 h</span>
+    <!-- HERO -->
+    <section class="hero">
+      <!-- Semaine en cours avec anneau -->
+      <div class="card hero-week">
+        <div class="card-head">
+          <span class="card-title">Cette semaine</span>
+          <span class="chip-soft" id="semainePeriode"></span>
         </div>
-        <div class="bar-track"><div class="bar-fill" id="semaineBar"></div></div>
-        <div class="sub" id="semaineReste"></div>
-        <div class="sub" id="semainePeriode"></div>
+        <div class="ring-layout">
+          <div class="ring" id="ring">
+            <svg viewBox="0 0 120 120" width="132" height="132" aria-hidden="true">
+              <circle class="ring-bg" cx="60" cy="60" r="52" />
+              <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52" />
+            </svg>
+            <div class="ring-center">
+              <div class="ring-pct" id="ringPct">0%</div>
+              <div class="ring-cap">de l'objectif</div>
+            </div>
+          </div>
+          <div class="ring-meta">
+            <div class="ring-hours"><span id="semaineHeures">0 h</span><span class="obj" id="semaineObjectif">/ 10 h</span></div>
+            <div class="ring-note" id="semaineReste"></div>
+          </div>
+        </div>
       </div>
 
-      <!-- Avance / retard -->
-      <div class="card avance" id="cardAvance">
-        <div class="label">Avance cumulée</div>
-        <div class="big inline">
+      <!-- Avance cumulée -->
+      <div class="card hero-avance" id="cardAvance">
+        <div class="card-head"><span class="card-title">Avance cumulée</span></div>
+        <div class="avance-value inline">
           <span id="avanceValeur">0 h</span>
-          <span class="lbl" id="avanceLabel"></span>
+          <span class="avance-label" id="avanceLabel"></span>
         </div>
-        <div class="sub" id="avanceDetail"></div>
+        <div class="avance-detail" id="avanceDetail"></div>
+        <div class="avance-track"><div class="avance-fill" id="avanceFill"></div></div>
       </div>
     </section>
 
-    <section class="cards">
-      <div class="card">
-        <div class="label">Total heures</div>
-        <div class="big" id="totalHeures">0 h</div>
-        <div class="sub">depuis le début de la mission</div>
+    <!-- KPIs -->
+    <section class="kpis">
+      <div class="kpi">
+        <div class="kpi-ico">Σ</div>
+        <div>
+          <div class="kpi-val" id="totalHeures">0 h</div>
+          <div class="kpi-lbl">Total heures réalisées</div>
+        </div>
       </div>
-      <div class="card">
-        <div class="label">Montant gagné</div>
-        <div class="big" id="totalGains">0 €</div>
-        <div class="sub">total heures × tarif horaire</div>
+      <div class="kpi">
+        <div class="kpi-ico">€</div>
+        <div>
+          <div class="kpi-val" id="totalGains">0 €</div>
+          <div class="kpi-lbl">Montant gagné</div>
+        </div>
       </div>
-      <div class="card">
-        <div class="label">Semaines écoulées</div>
-        <div class="big" id="nbSemaines">0</div>
-        <div class="sub">semaine en cours incluse</div>
+      <div class="kpi">
+        <div class="kpi-ico">≈</div>
+        <div>
+          <div class="kpi-val" id="moyenne">0 h</div>
+          <div class="kpi-lbl">Moyenne par semaine</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico">#</div>
+        <div>
+          <div class="kpi-val" id="nbSemaines">0</div>
+          <div class="kpi-lbl">Semaines écoulées</div>
+        </div>
       </div>
     </section>
 
+    <!-- Chart -->
     <section class="panel">
-      <h2>Heures par semaine</h2>
+      <div class="panel-head">
+        <h2>Heures par semaine</h2>
+        <span class="legend"><span class="legend-dot brand"></span>réalisé<span class="legend-dot good"></span>objectif atteint</span>
+      </div>
       <div class="chart" id="chart"></div>
     </section>
 
+    <!-- Récap par semaine -->
     <section class="panel">
-      <h2>Récapitulatif par semaine</h2>
+      <div class="panel-head"><h2>Récapitulatif par semaine</h2></div>
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
               <th>Semaine</th>
-              <th class="right">Fait</th>
+              <th class="right">Réalisé</th>
               <th class="right">Objectif</th>
               <th class="right">Statut</th>
               <th class="right">Montant</th>
@@ -83,8 +129,9 @@
       </div>
     </section>
 
+    <!-- Détail des séances -->
     <section class="panel">
-      <h2>Détail des séances</h2>
+      <div class="panel-head"><h2>Détail des séances</h2></div>
       <div class="table-scroll">
         <table>
           <thead>
@@ -101,7 +148,9 @@
     </section>
 
     <footer>
-      Données saisies dans <code>data.js</code> · Site statique hébergé sur GitHub Pages
+      <span>Données saisies dans <code>data.js</code></span>
+      <span class="dot-sep">•</span>
+      <span>Site statique hébergé sur GitHub Pages</span>
     </footer>
   </div>
 

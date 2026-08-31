@@ -82,23 +82,38 @@
   // ---------- Rendu ----------
   const $ = (id) => document.getElementById(id);
 
-  $("titrePrestataire").textContent = cfg.prestataire || "Prestataire";
+  const prestataire = cfg.prestataire || "Prestataire";
+  $("titrePrestataire").textContent = prestataire;
   $("titreClient").textContent = cfg.client || "";
+  $("monogram").textContent = (prestataire.trim()[0] || "•").toUpperCase();
   $("sousTitre").textContent =
-    `Objectif : ${fmtH(target)}/semaine · ${fmtMoney(rate)}/heure · depuis le ${fmtDate(debut)}`;
-  $("maj").textContent = "Mis à jour : " + now.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
+    `Objectif ${fmtH(target)}/semaine · ${fmtMoney(rate)}/heure · depuis le ${fmtDate(debut)}`;
+  $("maj").textContent = "Mis à jour le " + now.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
 
-  // Carte semaine en cours
+  // Chip de statut global (avance/retard)
+  const enAvanceGlobal = avance >= 0;
+  const chip = $("statusChip");
+  chip.classList.add(weeksElapsed === 0 ? "" : enAvanceGlobal ? "ok" : "warn");
+  $("statusChipText").textContent =
+    weeksElapsed === 0
+      ? "Mission à venir"
+      : enAvanceGlobal
+      ? `En avance de ${fmtH(avance)}`
+      : `En retard de ${fmtH(Math.abs(avance))}`;
+
+  // Carte semaine en cours (anneau)
   $("semaineHeures").textContent = fmtH(semaineHeures);
   $("semaineObjectif").textContent = "/ " + fmtH(target);
-  $("semaineBar").style.width = semainePct + "%";
-  $("semaineBar").classList.toggle("full", semaineHeures >= target);
+  const C = 2 * Math.PI * 52; // circonférence de l'anneau (r=52)
+  $("ringFg").style.strokeDashoffset = String(C * (1 - semainePct / 100));
+  $("ringPct").textContent = Math.round(semainePct) + "%";
+  $("ring").classList.toggle("full", semaineHeures >= target);
   const lundi = startOfWeek(today);
-  $("semainePeriode").textContent = `Semaine du ${fmtDateShort(lundi)} au ${fmtDateShort(addDays(lundi, 6))}`;
+  $("semainePeriode").textContent = `${fmtDateShort(lundi)} – ${fmtDateShort(addDays(lundi, 6))}`;
   $("semaineReste").textContent =
     semaineHeures >= target
       ? "🎉 Objectif de la semaine atteint !"
-      : `Il te reste ${fmtH(semaineReste)} à faire cette semaine`;
+      : `Il te reste ${fmtH(semaineReste)} à faire cette semaine.`;
 
   // Carte avance
   const avanceEl = $("avanceValeur");
@@ -109,13 +124,16 @@
   $("avanceDetail").textContent =
     weeksElapsed === 0
       ? "La mission n'a pas encore commencé."
-      : `${fmtH(totalHeures)} faites sur ${fmtH(attendu)} attendues (${weeksElapsed} sem.)`;
+      : `${fmtH(totalHeures)} réalisées sur ${fmtH(attendu)} attendues (${weeksElapsed} sem.)`;
   $("cardAvance").classList.add(enAvance ? "ok" : "warn");
+  const avancePct = attendu > 0 ? Math.min(100, (totalHeures / attendu) * 100) : totalHeures > 0 ? 100 : 0;
+  $("avanceFill").style.width = avancePct + "%";
 
   // Cartes totaux
   $("totalHeures").textContent = fmtH(totalHeures);
   $("totalGains").textContent = fmtMoney(totalGains);
   $("nbSemaines").textContent = String(weeksElapsed);
+  $("moyenne").textContent = weeksElapsed > 0 ? fmtH(totalHeures / weeksElapsed) : fmtH(0);
 
   // Tableau par semaine (du début à aujourd'hui, incluant semaines à 0h)
   const weekRows = [];
