@@ -13,7 +13,7 @@
 window.SUIVI = {
   config: {
     prestataire: "Bily",           // ton nom (affiché en haut)
-    client: "Infogreffe",          // le client
+    client: "",                    // le client (vide = masqué, page publique)
     debut: "2026-09-01",           // 1er jour de la mission (un LUNDI de préférence)
     heuresParSemaine: 10,          // objectif hebdomadaire
     tarifHoraire: 30,              // € par heure

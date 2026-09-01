@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Suivi des heures — Infogreffe</title>
-  <meta name="description" content="Suivi de prestation freelance : heures réalisées, avance et montant." />
+  <title>Suivi des heures</title>
+  <meta name="description" content="Suivi de prestation freelance : heures réalisées et avance." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=3" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>" />
 </head>
 <body>
@@ -31,12 +31,15 @@
       </div>
     </header>
 
+    <!-- NAVIGATION PAR ONGLETS -->
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+
     <!-- HERO -->
     <section class="hero">
       <!-- Semaine en cours avec anneau -->
       <div class="card hero-week">
         <div class="card-head">
-          <span class="card-title">Cette semaine</span>
+          <span class="card-title" id="ringCardTitle">Cette semaine</span>
           <span class="chip-soft" id="semainePeriode"></span>
         </div>
         <div class="ring-layout">
@@ -59,7 +62,7 @@
 
       <!-- Avance cumulée -->
       <div class="card hero-avance" id="cardAvance">
-        <div class="card-head"><span class="card-title">Avance cumulée</span></div>
+        <div class="card-head"><span class="card-title" id="avanceCardTitle">Avance cumulée</span></div>
         <div class="avance-value inline">
           <span id="avanceValeur">0 h</span>
           <span class="avance-label" id="avanceLabel"></span>
@@ -75,28 +78,28 @@
         <div class="kpi-ico">Σ</div>
         <div>
           <div class="kpi-val" id="totalHeures">0 h</div>
-          <div class="kpi-lbl">Total heures réalisées</div>
+          <div class="kpi-lbl" id="lblTotal">Total heures réalisées</div>
         </div>
       </div>
       <div class="kpi">
         <div class="kpi-ico">€</div>
         <div>
           <div class="kpi-val" id="totalGains">0 €</div>
-          <div class="kpi-lbl">Montant gagné</div>
+          <div class="kpi-lbl" id="lblGains">Montant gagné</div>
         </div>
       </div>
       <div class="kpi">
         <div class="kpi-ico">≈</div>
         <div>
           <div class="kpi-val" id="moyenne">0 h</div>
-          <div class="kpi-lbl">Moyenne par semaine</div>
+          <div class="kpi-lbl" id="lblMoyenne">Moyenne par semaine</div>
         </div>
       </div>
       <div class="kpi">
         <div class="kpi-ico">#</div>
         <div>
           <div class="kpi-val" id="nbSemaines">0</div>
-          <div class="kpi-lbl">Semaines écoulées</div>
+          <div class="kpi-lbl" id="lblNb">Semaines écoulées</div>
         </div>
       </div>
     </section>
@@ -152,7 +155,18 @@
     </footer>
   </div>
 
-  <script src="data.js"></script>
-  <script src="app.js"></script>
+  <!-- Chargement anti-cache : data.js (tes heures) et app.js sont toujours rechargés,
+       pour que tes mises à jour apparaissent immédiatement sans vider le cache. -->
+  <script>
+    (function () {
+      var v = Date.now();
+      ["data.js", "app.js"].forEach(function (src) {
+        var s = document.createElement("script");
+        s.src = src + "?t=" + v;
+        s.async = false; // conserve l'ordre d'exécution (data.js avant app.js)
+        document.body.appendChild(s);
+      });
+    })();
+  </script>
 </body>
 </html>
