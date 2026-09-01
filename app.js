@@ -169,12 +169,11 @@
       <td class="right ${objAtteint ? "good" : r.heures > 0 ? "" : "muted"}">${fmtH(r.heures)}</td>
       <td class="right muted">${fmtH(target)}</td>
       <td class="right">${statusPill(r.heures, target)}</td>
-      <td class="right mono">${fmtMoney(r.heures * rate)}</td>
     `;
     tbodyWeeks.appendChild(tr);
   });
   if (weekRows.length === 0) {
-    tbodyWeeks.innerHTML = `<tr><td colspan="5" class="muted center">Aucune semaine à afficher pour le moment.</td></tr>`;
+    tbodyWeeks.innerHTML = `<tr><td colspan="4" class="muted center">Aucune semaine à afficher pour le moment.</td></tr>`;
   }
 
   function statusPill(h, t) {
@@ -186,18 +185,17 @@
   // Détail des séances (les plus récentes en haut)
   const tbodyLog = $("tbodyLog");
   tbodyLog.innerHTML = "";
-  [...entries].sort((a, b) => b.date - a.date).forEach((e) => {
+  [...entries].sort((a, b) => a.date - b.date).forEach((e) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td class="mono">${fmtDate(e.date)}</td>
       <td class="right mono">${fmtH(e.heures)}</td>
       <td>${escapeHtml(e.note)}</td>
-      <td class="right mono muted">${fmtMoney(e.heures * rate)}</td>
     `;
     tbodyLog.appendChild(tr);
   });
   if (entries.length === 0) {
-    tbodyLog.innerHTML = `<tr><td colspan="4" class="muted center">Aucune séance saisie. Ajoute tes heures dans le fichier data.js.</td></tr>`;
+    tbodyLog.innerHTML = `<tr><td colspan="3" class="muted center">Aucune séance saisie. Ajoute tes heures dans le fichier data.js.</td></tr>`;
   }
 
   // Mini graphique en barres (heures par semaine)
