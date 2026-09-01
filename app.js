@@ -21,6 +21,10 @@
   }
   function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
   function fmtDate(date) { return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }); }
+  function fmtDateLong(date) {
+    const d = date.getDate();
+    return `${d === 1 ? "1er" : d} ${MOIS[date.getMonth()]} ${date.getFullYear()}`;
+  }
   function fmtDateShort(date) { return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }); }
   function weekKey(date) {
     const s = startOfWeek(date);
@@ -99,7 +103,7 @@
     el.style.display = clientNom ? "" : "none";
   });
   $("monogram").textContent = (prestataire.trim()[0] || "•").toUpperCase();
-  $("sousTitre").textContent = `Objectif ${fmtH(target)}/semaine · depuis le ${fmtDate(debut)}`;
+  $("sousTitre").textContent = `Objectif ${fmtH(target)}/semaine · depuis le ${fmtDateLong(debutRaw)}`;
   $("maj").textContent = "Mis à jour le " + now.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
 
   const chip = $("statusChip");
