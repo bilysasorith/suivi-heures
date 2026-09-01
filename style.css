@@ -68,12 +68,21 @@ h1 .client { color: var(--ink-2); font-weight: 700; }
 .subtitle { color: var(--muted); font-size: 13.5px; margin: 0; }
 .header-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
+/* ---------- Animations ---------- */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ---------- Barre d'onglets ---------- */
 .tabs {
   display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; padding: 6px;
-  background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 88%, transparent); border: 1px solid var(--line); border-radius: 999px;
   box-shadow: var(--shadow-sm); width: fit-content; max-width: 100%;
+  position: sticky; top: 12px; z-index: 30; backdrop-filter: saturate(1.2) blur(8px);
+  transition: box-shadow .25s ease;
 }
+.tabs.stuck { box-shadow: var(--shadow); }
 .tab {
   font: inherit; cursor: pointer; border: none; background: transparent; color: var(--muted);
   font-size: 13.5px; font-weight: 600; padding: 8px 16px; border-radius: 999px;
@@ -98,6 +107,18 @@ h1 .client { color: var(--ink-2); font-weight: 700; }
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 22px 24px; box-shadow: var(--shadow);
+  transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease, border-color .25s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1px 3px rgba(15, 24, 48, .07), 0 22px 44px -18px rgba(15, 24, 48, .28);
+  border-color: var(--line-strong);
+}
+.kpi { transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease, border-color .25s ease; }
+.kpi:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--line-strong); }
+@media (prefers-reduced-motion: reduce) {
+  .card, .kpi { transition: none; }
+  .card:hover, .kpi:hover { transform: none; }
 }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
 .card-title { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }

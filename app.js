@@ -112,6 +112,36 @@
     weeksElapsedGlobal === 0 ? "Mission à venir"
       : avanceGlobal >= 0 ? `En avance de ${fmtH(avanceGlobal)}` : `En retard de ${fmtH(Math.abs(avanceGlobal))}`;
 
+  // ---------- Animations ----------
+  const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function countUp(el, to, fmt, dur) {
+    if (!el) return;
+    if (prefersReduced) { el.textContent = fmt(to); return; }
+    dur = dur || 850;
+    const start = performance.now();
+    function tick(now) {
+      const t = Math.min(1, (now - start) / dur);
+      const e = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      el.textContent = fmt(to * e);
+      if (t < 1) requestAnimationFrame(tick);
+      else el.textContent = fmt(to);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function reveal() {
+    if (prefersReduced) return;
+    const els = document.querySelectorAll(".hero > .card, .kpi, .panel");
+    els.forEach((el, i) => {
+      if (el.offsetParent === null) return; // ignore les éléments masqués
+      el.style.animation = "none";
+      void el.offsetWidth; // reflow pour rejouer l'animation
+      el.style.animation = `riseIn .55s cubic-bezier(.2,.8,.2,1) ${i * 55}ms both`;
+      el.addEventListener("animationend", () => { el.style.animation = ""; }, { once: true });
+    });
+  }
+
   // ---------- Rendu d'un scope ('general' | {y,m}) ----------
   const C = 2 * Math.PI * 52;
 
@@ -134,6 +164,7 @@
 
     if (isMonth) renderMonth(scope, scoped, totalHeures, totalGains, byWeek);
     else renderGeneral(totalHeures, totalGains, byWeek);
+    reveal();
   }
 
   // ----- Vue Générale -----
@@ -160,11 +191,11 @@
 
     // KPIs
     $("lblTotal").textContent = "Total heures réalisées";
-    $("totalHeures").textContent = fmtH(totalHeures);
+    countUp($("totalHeures"), totalHeures, (v) => fmtH(v));
     $("lblMoyenne").textContent = "Moyenne par semaine";
-    $("moyenne").textContent = weeksElapsedGlobal > 0 ? fmtH(totalHeures / weeksElapsedGlobal) : fmtH(0);
+    countUp($("moyenne"), weeksElapsedGlobal > 0 ? totalHeures / weeksElapsedGlobal : 0, (v) => fmtH(v));
     $("lblNb").textContent = "Semaines écoulées";
-    $("nbSemaines").textContent = String(weeksElapsedGlobal);
+    countUp($("nbSemaines"), weeksElapsedGlobal, (v) => String(Math.round(v)));
 
     // Récap : toutes les semaines écoulées depuis le début
     const weekRows = [];
@@ -212,7 +243,7 @@
     $("avanceCardTitle").textContent = "Objectif — " + nomMois;
     const av = $("avanceValeur");
     av.classList.remove("pos", "neg");
-    av.textContent = fmtH(objectif);
+    countUp(av, objectif, (v) => fmtH(v));
     $("avanceLabel").textContent = "visé";
     $("avanceDetail").textContent = `${fmtH(totalHeures)} réalisées · reste ${fmtH(reste)}`;
     const card = $("cardAvance");
@@ -221,11 +252,11 @@
 
     // KPIs (mois)
     $("lblTotal").textContent = "Total heures du mois";
-    $("totalHeures").textContent = fmtH(totalHeures);
+    countUp($("totalHeures"), totalHeures, (v) => fmtH(v));
     $("lblMoyenne").textContent = "Moyenne par semaine";
-    $("moyenne").textContent = semTravaillees > 0 ? fmtH(totalHeures / semTravaillees) : fmtH(0);
+    countUp($("moyenne"), semTravaillees > 0 ? totalHeures / semTravaillees : 0, (v) => fmtH(v));
     $("lblNb").textContent = "Semaines travaillées";
-    $("nbSemaines").textContent = String(semTravaillees);
+    countUp($("nbSemaines"), semTravaillees, (v) => String(Math.round(v)));
 
     // Récap par semaine : toutes les semaines du mois (+ éventuels extras)
     const weekRows = mondays.map((start) => {
@@ -242,10 +273,10 @@
 
   // ---------- Sous-rendus partagés ----------
   function setRing(hours, denom, pct) {
-    $("semaineHeures").textContent = fmtH(hours);
+    countUp($("semaineHeures"), hours, (v) => fmtH(v));
     $("semaineObjectif").textContent = "/ " + fmtH(denom);
     $("ringFg").style.strokeDashoffset = String(C * (1 - pct / 100));
-    $("ringPct").textContent = Math.round(pct) + "%";
+    countUp($("ringPct"), pct, (v) => Math.round(v) + "%");
     $("ring").classList.toggle("full", denom > 0 && hours >= denom);
   }
 
@@ -253,7 +284,7 @@
     const el = $("avanceValeur");
     el.classList.remove("pos", "neg");
     const pos = avance >= 0;
-    el.textContent = (pos ? "+" : "−") + fmtH(Math.abs(avance)).replace(" h", "") + " h";
+    countUp(el, Math.abs(avance), (v) => (pos ? "+" : "−") + fmtH(v).replace(" h", "") + " h");
     el.classList.add(pos ? "pos" : "neg");
     $("avanceLabel").textContent = neutral ? "" : pos ? "d'avance" : "de retard";
     $("avanceDetail").textContent = detail;
@@ -294,13 +325,20 @@
     const chart = $("chart");
     chart.innerHTML = "";
     const maxH = Math.max(target, ...chartWeeks.map((w) => w.heures), 1);
-    chartWeeks.forEach((w) => {
+    chartWeeks.forEach((w, i) => {
       const col = document.createElement("div"); col.className = "bar-col";
       const wrap = document.createElement("div"); wrap.className = "bar-wrap";
       const bar = document.createElement("div");
       bar.className = "bar" + (target > 0 && w.heures >= target ? " good" : "");
-      bar.style.height = (w.heures / maxH) * 100 + "%";
+      const finalH = (w.heures / maxH) * 100 + "%";
       bar.title = `${fmtDateShort(w.start)} : ${fmtH(w.heures)}`;
+      if (prefersReduced) {
+        bar.style.height = finalH;
+      } else {
+        bar.style.height = "0%";
+        bar.style.transitionDelay = i * 45 + "ms";
+        requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.height = finalH; }));
+      }
       wrap.appendChild(bar);
       const lbl = document.createElement("div"); lbl.className = "bar-lbl"; lbl.textContent = fmtDateShort(w.start);
       col.appendChild(wrap); col.appendChild(lbl); chart.appendChild(col);
@@ -333,6 +371,11 @@
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
+
+  // Ombre de la barre d'onglets quand on scrolle
+  window.addEventListener("scroll", () => {
+    tabsEl.classList.toggle("stuck", window.scrollY > 20);
+  }, { passive: true });
 
   // ---------- Démarrage ----------
   selectTab("general");
