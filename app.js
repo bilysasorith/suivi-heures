@@ -173,10 +173,8 @@
 
     renderWeeksTable(weekRows, currentWeekKey);
     renderChart(weekRows.slice().sort((a, b) => a.start - b.start).slice(-12));
-    renderLog(scopedSortAll(), false);
+    $("panelLog").style.display = "none"; // pas de détail des séances en vue Générale
   }
-
-  function scopedSortAll() { return entries.slice(); }
 
   // ----- Vue Mois -----
   function renderMonth(scope, scoped, totalHeures, totalGains, byWeek) {
@@ -191,7 +189,9 @@
       if (thu.getFullYear() > scope.y || (thu.getFullYear() === scope.y && thu.getMonth() > scope.m)) break;
       if (thu.getMonth() === scope.m && thu.getFullYear() === scope.y && w >= debut) mondays.push(new Date(w));
     }
-    const objectif = mondays.length * target;   // objectif du mois (h)
+    // Objectif du mois : override éventuel dans la config, sinon nb de semaines × cible
+    const override = (cfg.objectifsMois || {})[scope.m + 1];
+    const objectif = override != null ? Number(override) : mondays.length * target;
     const reste = Math.max(0, objectif - totalHeures);
     const pct = objectif > 0 ? Math.min(100, (totalHeures / objectif) * 100) : (totalHeures > 0 ? 100 : 0);
     const semTravaillees = Array.from(byWeek.values()).filter((x) => x.heures > 0).length;
@@ -232,6 +232,7 @@
 
     renderWeeksTable(weekRows, weekKey(today));
     renderChart(weekRows.slice().sort((a, b) => a.start - b.start));
+    $("panelLog").style.display = ""; // détail des séances visible dans la vue mois
     renderLog(scoped.slice(), true);
   }
 

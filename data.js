@@ -18,6 +18,13 @@ window.SUIVI = {
     heuresParSemaine: 10,          // objectif hebdomadaire
     tarifHoraire: 30,              // € par heure
     devise: "€",
+
+    // Objectif d'un mois précis (en heures). Par défaut, l'objectif du mois
+    // = nombre de semaines du mois × heuresParSemaine. Ici on force décembre.
+    // Clé = numéro du mois (1 = janvier … 12 = décembre).
+    objectifsMois: {
+      12: 40,   // décembre : 40 h
+    },
   },
 
   // Ajoute tes séances ici (les plus récentes en haut ou en bas, peu importe) :
