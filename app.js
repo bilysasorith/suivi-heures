@@ -157,8 +157,6 @@
     // KPIs
     $("lblTotal").textContent = "Total heures réalisées";
     $("totalHeures").textContent = fmtH(totalHeures);
-    $("lblGains").textContent = "Montant gagné";
-    $("totalGains").textContent = fmtMoney(totalGains);
     $("lblMoyenne").textContent = "Moyenne par semaine";
     $("moyenne").textContent = weeksElapsedGlobal > 0 ? fmtH(totalHeures / weeksElapsedGlobal) : fmtH(0);
     $("lblNb").textContent = "Semaines écoulées";
@@ -220,8 +218,6 @@
     // KPIs (mois)
     $("lblTotal").textContent = "Total heures du mois";
     $("totalHeures").textContent = fmtH(totalHeures);
-    $("lblGains").textContent = "Montant du mois";
-    $("totalGains").textContent = fmtMoney(totalGains);
     $("lblMoyenne").textContent = "Moyenne par semaine";
     $("moyenne").textContent = semTravaillees > 0 ? fmtH(totalHeures / semTravaillees) : fmtH(0);
     $("lblNb").textContent = "Semaines travaillées";
