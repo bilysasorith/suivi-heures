@@ -103,7 +103,7 @@
     el.style.display = clientNom ? "" : "none";
   });
   $("monogram").textContent = (prestataire.trim()[0] || "•").toUpperCase();
-  $("sousTitre").textContent = `Objectif ${fmtH(target)}/semaine · depuis le ${fmtDateLong(debutRaw)}`;
+  $("sousTitre").textContent = `Objectif ${fmtH(target)}/semaine · depuis le ${fmtDateLong(debut)}`;
   $("maj").textContent = "Mis à jour le " + now.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
 
   const chip = $("statusChip");
