@@ -31,5 +31,6 @@ window.SUIVI = {
   heures: [
     { date: "2026-09-01", heures: 1.5, note: "PPT Août 2026" },
     { date: "2026-09-04", heures: 1,   note: "Réunion CNGTC" },
+    { date: "2026-09-06", heures: 2,   note: "PPT coaching et salle de sport" },
   ],
 };
