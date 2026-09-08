@@ -30,5 +30,6 @@ window.SUIVI = {
   // Ajoute tes séances ici (les plus récentes en haut ou en bas, peu importe) :
   heures: [
     { date: "2026-09-01", heures: 1.5, note: "PPT Août 2026" },
+    { date: "2026-09-04", heures: 1,   note: "Réunion CNGTC" },
   ],
 };
