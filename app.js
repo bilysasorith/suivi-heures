@@ -436,9 +436,22 @@
       wrap.appendChild(val); wrap.appendChild(bar);
       const lbl = document.createElement("div"); lbl.className = "bar-lbl"; lbl.textContent = fmtDateShort(w.start);
       col.appendChild(wrap); col.appendChild(lbl); chart.appendChild(col);
-      const tipHtml = `<b>${fmtDateShort(w.start)}</b> · ${fmtH(w.heures)}`;
+      // Clic : aller au mois de cette semaine (règle ISO : mois du jeudi) + détail des séances
+      const thu = addDays(startOfWeek(w.start), 3);
+      const monthId = `${thu.getFullYear()}-${thu.getMonth()}`;
+      const def = tabDefs.find((t) => t.id === monthId);
+      const clickable = def && !def.future;
+      if (clickable) col.classList.add("clickable");
+      const tipHtml = `<b>${fmtDateShort(w.start)}</b> · ${fmtH(w.heures)}${clickable ? " — voir le détail" : ""}`;
       col.addEventListener("mousemove", (e) => showTip(tipHtml, e.clientX, e.clientY));
       col.addEventListener("mouseleave", hideTip);
+      if (clickable) {
+        col.addEventListener("click", () => {
+          hideTip();
+          selectTab(monthId);
+          setTimeout(() => { $("panelLog").scrollIntoView({ behavior: "smooth", block: "start" }); }, 160);
+        });
+      }
     });
     if (chartWeeks.length) {
       const line = document.createElement("div"); line.className = "chart-target";
@@ -453,7 +466,23 @@
   function renderLog(list, isMonth) {
     const tb = $("tbodyLog");
     tb.innerHTML = "";
-    list.sort((a, b) => a.date - b.date).forEach((e) => {
+    if (list.length === 0) {
+      tb.innerHTML = `<tr><td colspan="3" class="muted center">${isMonth ? "Aucune séance ce mois-ci." : "Aucune séance saisie. Ajoute tes heures dans data.js."}</td></tr>`;
+      return;
+    }
+    const sorted = list.slice().sort((a, b) => a.date - b.date);
+    let lastWk = null;
+    sorted.forEach((e) => {
+      const wk = weekKey(e.date);
+      if (wk !== lastWk) {
+        lastWk = wk;
+        const s = startOfWeek(e.date);
+        const tot = sorted.filter((x) => weekKey(x.date) === wk).reduce((a, x) => a + x.heures, 0);
+        const hr = document.createElement("tr");
+        hr.className = "wk-head";
+        hr.innerHTML = `<td colspan="2">Semaine du ${fmtDateShort(s)} au ${fmtDateShort(addDays(s, 6))}</td><td class="right">${fmtH(tot)}</td>`;
+        tb.appendChild(hr);
+      }
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td class="mono nowrap">${fmtDateShort(e.date)}</td>
@@ -461,8 +490,6 @@
         <td>${escapeHtml(e.note)}</td>`;
       tb.appendChild(tr);
     });
-    if (list.length === 0)
-      tb.innerHTML = `<tr><td colspan="3" class="muted center">${isMonth ? "Aucune séance ce mois-ci." : "Aucune séance saisie. Ajoute tes heures dans data.js."}</td></tr>`;
   }
 
   function escapeHtml(s) {
