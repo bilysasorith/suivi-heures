@@ -111,7 +111,64 @@ h1 .client { color: var(--ink-2); font-weight: 700; }
 }
 .tab:hover { color: var(--ink); background: color-mix(in srgb, var(--brand) 7%, transparent); }
 .tab.active { color: #fff; background: linear-gradient(140deg, var(--brand), var(--brand-2)); box-shadow: 0 4px 12px -5px color-mix(in srgb, var(--brand) 65%, transparent); }
-@media (max-width: 560px) { .tabs { width: 100%; overflow-x: auto; flex-wrap: nowrap; } }
+/* ---------- Adaptations mobile ---------- */
+@media (max-width: 560px) {
+  .wrap { padding: 22px 15px 52px; }
+
+  /* En-tête plus compact */
+  .site-header { gap: 14px; margin-bottom: 20px; }
+  .identity { gap: 13px; }
+  .monogram { width: 46px; height: 46px; font-size: 20px; border-radius: 12px; }
+  h1 { font-size: 22px; }
+  .eyebrow { font-size: 11px; }
+  .subtitle { font-size: 12.5px; }
+  .header-side { align-items: flex-start; width: 100%; }
+
+  /* Onglets : pleine largeur, défilables, fond opaque (sinon on voit le contenu dessous) */
+  .tabs {
+    width: 100%; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; border-radius: 14px; top: 8px; gap: 4px;
+    background: var(--card); backdrop-filter: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: 0 0 auto; padding: 9px 15px; }
+
+  /* Carte "Cette semaine" : anneau centré, moins de vide */
+  .ring-layout { flex-direction: column; align-items: center; text-align: center; gap: 12px; }
+  .ring-hours { justify-content: center; }
+  .ring-meta { min-width: 0; }
+
+  /* Cartes / panneaux un peu plus serrés */
+  .card { padding: 20px 18px; }
+  .panel { padding: 20px 18px 16px; }
+  .card-head { margin-bottom: 16px; }
+  .avance-value { font-size: 36px; }
+  .ring-hours { font-size: 30px; }
+  .panel h2 { font-size: 17px; }
+
+  /* Graphe hebdo plus lisible */
+  .chart { gap: 8px; height: 170px; }
+  .bar-lbl { font-size: 10px; }
+
+  /* KPIs : une belle grille 2 colonnes, la 3e prend toute la largeur */
+  .kpi { padding: 14px 15px; gap: 11px; }
+  .kpi:last-child { grid-column: 1 / -1; }
+
+  /* Tableaux plus compacts */
+  table { font-size: 12.5px; }
+  th, td { padding: 10px 9px; }
+  .tag { display: block; width: fit-content; margin: 4px 0 0 0; } /* "en cours" sous la date */
+  .pill { padding: 3px 9px; font-size: 11px; }
+  th, td { padding: 10px 7px; }
+  /* Sur mobile, on masque la colonne "Objectif" (toujours 10 h) pour tout faire tenir */
+  .tbl-weeks th:nth-child(3), .tbl-weeks td:nth-child(3) { display: none; }
+  .pill-extra { display: none; } /* badge compact : "0.5 h" au lieu de "0.5 h manquantes" */
+}
+
+@media (max-width: 380px) {
+  .kpis { grid-template-columns: 1fr; }
+  .kpi:last-child { grid-column: auto; }
+}
 .status-chip {
   display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px;
   padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--card);
@@ -235,6 +292,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--brand) 4%, transparent); }
 td.right, th.right { text-align: right; }
 td.center { text-align: center; }
 .mono { font-variant-numeric: tabular-nums; }
+.nowrap { white-space: nowrap; }
 .muted { color: var(--muted); }
 .good { color: var(--good); font-weight: 600; }
 tr.current { background: var(--brand-soft) !important; }

@@ -26,6 +26,12 @@
     return `${d === 1 ? "1er" : d} ${MOIS[date.getMonth()]} ${date.getFullYear()}`;
   }
   function fmtDateShort(date) { return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }); }
+  function fmtRange(a, b) {
+    const mois = a.toLocaleDateString("fr-FR", { month: "short" });
+    if (a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear())
+      return `${a.getDate()}–${b.getDate()} ${mois}`;
+    return `${fmtDateShort(a)} – ${fmtDateShort(b)}`;
+  }
   function weekKey(date) {
     const s = startOfWeek(date);
     return `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, "0")}-${String(s.getDate()).padStart(2, "0")}`;
@@ -220,7 +226,11 @@
     let cum = 0;
     const pts = asc.map((r, i) => { cum += r.heures; return { i, start: r.start, real: cum, obj: (i + 1) * weeklyTarget }; });
     const n = pts.length;
-    const W = 800, H = 240, PL = 44, PR = 16, PT = 16, PB = 34;
+    // Largeur = largeur réelle du conteneur => texte net et non déformé sur mobile
+    const W = Math.max(320, Math.round(host.clientWidth || 800));
+    const narrow = W < 480;
+    const H = narrow ? 200 : 240;
+    const PL = narrow ? 34 : 44, PR = 14, PT = 16, PB = 32;
     const maxY = Math.max(pts[n - 1].real, pts[n - 1].obj, 1);
     const x = (i) => PL + (n === 1 ? (W - PL - PR) / 2 : (i / (n - 1)) * (W - PL - PR));
     const y = (v) => PT + (1 - v / maxY) * (H - PT - PB);
@@ -236,8 +246,8 @@
       `<text class="axis-lbl" x="${PL - 8}" y="${(y(v) + 3).toFixed(1)}" text-anchor="end">${Math.round(v)} h</text>`
     ).join("");
 
-    // étiquettes X (on en montre ~6 max)
-    const step = Math.max(1, Math.ceil(n / 6));
+    // étiquettes X (espacées selon la largeur dispo)
+    const step = Math.max(1, Math.ceil(n / Math.max(3, Math.floor((W - PL - PR) / 90))));
     const xlabels = pts.map((p) =>
       (p.i % step === 0 || p.i === n - 1)
         ? `<text class="axis-lbl" x="${x(p.i).toFixed(1)}" y="${H - 12}" text-anchor="middle">${fmtDateShort(p.start)}</text>` : ""
@@ -335,7 +345,7 @@
     byWeek.forEach((w, k) => { if (!weekRows.some((r) => weekKey(r.start) === k)) weekRows.push({ start: w.start, heures: w.heures }); });
 
     renderWeeksTable(weekRows, currentWeekKey);
-    renderChart(weekRows.slice().sort((a, b) => a.start - b.start).slice(-12));
+    renderChart(weekRows.slice().sort((a, b) => a.start - b.start).slice(-(window.innerWidth < 560 ? 8 : 12)));
     renderTrend(weekRows, target);
     $("panelLog").style.display = "none"; // pas de détail des séances en vue Générale
   }
@@ -430,7 +440,7 @@
   function statusPill(h, t) {
     if (t > 0 && h >= t) return `<span class="pill good">Atteint</span>`;
     if (h === 0) return `<span class="pill neutral">—</span>`;
-    return `<span class="pill warn">${fmtH(t - h)} manquantes</span>`;
+    return `<span class="pill warn">${fmtH(t - h)}<span class="pill-extra"> manquantes</span></span>`;
   }
 
   function renderWeeksTable(weekRows, currentWeekKey) {
@@ -443,7 +453,7 @@
       const tr = document.createElement("tr");
       if (isCurrent) tr.classList.add("current");
       tr.innerHTML = `
-        <td class="mono">${fmtDateShort(r.start)} – ${fmtDateShort(addDays(r.start, 6))}${isCurrent ? ' <span class="tag">en cours</span>' : ""}</td>
+        <td class="mono nowrap">${fmtRange(r.start, addDays(r.start, 6))}${isCurrent ? ' <span class="tag">en cours</span>' : ""}</td>
         <td class="right ${objAtteint ? "good" : r.heures > 0 ? "" : "muted"}">${fmtH(r.heures)}</td>
         <td class="right muted">${fmtH(target)}</td>
         <td class="right">${statusPill(r.heures, target)}</td>`;
@@ -493,7 +503,7 @@
     list.sort((a, b) => a.date - b.date).forEach((e) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="mono">${fmtDate(e.date)}</td>
+        <td class="mono nowrap">${fmtDateShort(e.date)}</td>
         <td class="right mono">${fmtH(e.heures)}</td>
         <td>${escapeHtml(e.note)}</td>`;
       tb.appendChild(tr);
