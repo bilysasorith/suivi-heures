@@ -263,8 +263,9 @@
 
   // ----- Vue Générale -----
   function renderGeneral(totalHeures, totalGains, byWeek) {
-    // Vue complète : on réaffiche la carte Avance
+    // Vue complète : on réaffiche la carte Avance et les KPIs
     $("cardAvance").style.display = "";
+    $("kpis").style.display = "";
     document.getElementById("hero").classList.remove("solo");
 
     const currentWeekKey = weekKey(today);
@@ -337,8 +338,10 @@
       ? "🎉 Objectif du mois atteint !"
       : totalHeures > 0 ? `Il reste ${fmtH(reste)} pour l'objectif du mois.` : "Aucune heure saisie ce mois-ci.";
 
-    // Vue mois épurée : on masque la carte "Objectif" (doublon de l'anneau).
+    // Vue mois épurée : on masque la carte "Objectif" (doublon de l'anneau)
+    // et la rangée de KPIs (peu utile ici, déjà dans l'anneau).
     $("cardAvance").style.display = "none";
+    $("kpis").style.display = "none";
     document.getElementById("hero").classList.add("solo");
 
     // KPIs (mois)
