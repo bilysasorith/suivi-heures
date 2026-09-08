@@ -20,6 +20,7 @@
     return d;
   }
   function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
+  function ownerMonth(date) { const thu = addDays(startOfWeek(date), 3); return { y: thu.getFullYear(), m: thu.getMonth() }; }
   function fmtDate(date) { return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }); }
   function fmtDateLong(date) {
     const d = date.getDate();
@@ -238,8 +239,10 @@
 
   function render(scope) {
     const isMonth = scope !== "general";
+    // Rattache chaque séance au mois de SA semaine (mois du jeudi, règle ISO),
+    // pour rester cohérent avec le récap par semaine (ex. 31 août -> septembre).
     const scoped = isMonth
-      ? entries.filter((e) => e.date.getFullYear() === scope.y && e.date.getMonth() === scope.m)
+      ? entries.filter((e) => { const o = ownerMonth(e.date); return o.y === scope.y && o.m === scope.m; })
       : entries;
 
     const totalHeures = scoped.reduce((s, e) => s + e.heures, 0);

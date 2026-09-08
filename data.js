@@ -29,6 +29,7 @@ window.SUIVI = {
 
   // Ajoute tes séances ici (les plus récentes en haut ou en bas, peu importe) :
   heures: [
+    { date: "2026-08-31", heures: 0.5, note: "Échanges avec Anne pour l'article Coaching + recherches codes NAF à utiliser" },
     { date: "2026-09-01", heures: 1.5, note: "PPT Août 2026" },
     { date: "2026-09-04", heures: 1,   note: "Réunion CNGTC" },
     { date: "2026-09-06", heures: 2,   note: "PPT coaching et salle de sport" },
