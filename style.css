@@ -109,7 +109,8 @@ h1 .client { color: var(--ink-2); font-weight: 700; }
   font-size: 13.5px; font-weight: 600; padding: 8px 16px; border-radius: 999px;
   transition: background .15s ease, color .15s ease; white-space: nowrap;
 }
-.tab:hover { color: var(--ink); background: color-mix(in srgb, var(--brand) 7%, transparent); }
+.tab:hover:not(.disabled) { color: var(--ink); background: color-mix(in srgb, var(--brand) 7%, transparent); }
+.tab.disabled { opacity: .38; cursor: not-allowed; }
 .tab.active { color: #fff; background: linear-gradient(140deg, var(--brand), var(--brand-2)); box-shadow: 0 4px 12px -5px color-mix(in srgb, var(--brand) 65%, transparent); }
 /* ---------- Adaptations mobile ---------- */
 @media (max-width: 560px) {

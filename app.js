@@ -71,8 +71,9 @@
   for (let m = startMonth; m <= 11; m++) months.push({ y: startYear, m });
 
   const tabsEl = document.getElementById("tabs");
+  const isFuture = (mm) => mm.y > today.getFullYear() || (mm.y === today.getFullYear() && mm.m > today.getMonth());
   const tabDefs = [{ id: "general", label: "Général" }].concat(
-    months.map((mm) => ({ id: `${mm.y}-${mm.m}`, label: MOIS_COURT[mm.m] + " " + String(mm.y).slice(2), scope: mm }))
+    months.map((mm) => ({ id: `${mm.y}-${mm.m}`, label: MOIS_COURT[mm.m] + " " + String(mm.y).slice(2), scope: mm, future: isFuture(mm) }))
   );
   let activeTab = "general";
 
@@ -82,7 +83,13 @@
     b.type = "button";
     b.textContent = t.label;
     b.dataset.id = t.id;
-    b.addEventListener("click", () => selectTab(t.id));
+    if (t.future) {
+      b.classList.add("disabled");
+      b.disabled = true;
+      b.title = "Mois à venir";
+    } else {
+      b.addEventListener("click", () => selectTab(t.id));
+    }
     tabsEl.appendChild(b);
   });
 
@@ -100,15 +107,25 @@
   const attenduGlobal = weeksElapsedGlobal * target;
   const avanceGlobal = totalHeuresGlobal - attenduGlobal;
 
-  const prestataire = cfg.prestataire || "Prestataire";
-  $("titrePrestataire").textContent = prestataire;
+  const prestataire = (cfg.prestataire || "").trim();
   const clientNom = (cfg.client || "").trim();
-  $("titreClient").textContent = clientNom;
+  const eyebrowEl = document.querySelector(".eyebrow");
+  if (prestataire) {
+    $("titrePrestataire").textContent = prestataire;
+    $("titreClient").textContent = clientNom;
+    $("monogram").textContent = (prestataire[0] || "•").toUpperCase();
+    if (eyebrowEl) eyebrowEl.style.display = "";
+  } else {
+    // Pas de nom : titre générique, monogramme neutre, on masque l'eyebrow (redondant)
+    $("titrePrestataire").textContent = "Suivi des heures";
+    $("titreClient").textContent = "";
+    $("monogram").textContent = "⏱️";
+    if (eyebrowEl) eyebrowEl.style.display = "none";
+  }
   // Masque le séparateur et le client si aucun client n'est renseigné
   document.querySelectorAll("h1 .sep, h1 .client").forEach((el) => {
     el.style.display = clientNom ? "" : "none";
   });
-  $("monogram").textContent = (prestataire.trim()[0] || "•").toUpperCase();
   $("sousTitre").textContent = `Objectif ${fmtH(target)}/semaine · depuis le ${fmtDateLong(debut)}`;
   $("maj").textContent = "Mis à jour le " + now.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
 
