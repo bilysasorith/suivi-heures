@@ -34,6 +34,7 @@ window.SUIVI = {
     { date: "2026-09-04", heures: 1,   note: "Réunion CNGTC" },
     { date: "2026-09-06", heures: 2,   note: "PPT coaching et salle de sport" },
     { date: "2026-09-07", heures: 0.5, note: "Échanges avec Nicolas François et Philippe LOPEZ + test requête SQL" },
+    { date: "2026-09-07", heures: 0.33, note: "Légère correction PPT + check fichier prévention (présence SIREN ou secteur ?)" },
     { date: "2026-09-08", heures: 2,   note: "Accès et analyse fichier Marketplace PCL à la demande de Katrin TILLMANS" },
     { date: "2026-09-08", heures: 1,   note: "Extraction, requête SQL WS EE + call avec Philippe LOPEZ + début tutoriel DBeaver" },
   ],
