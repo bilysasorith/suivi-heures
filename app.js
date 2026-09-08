@@ -39,6 +39,8 @@
   }
   function fmtH(h) {
     const val = Math.round(h * 100) / 100;
+    if (val === 0) return "0 h";
+    if (val < 1) return Math.round(val * 60) + " min"; // < 1 h -> en minutes (plus parlant)
     return (Number.isInteger(val) ? val : val.toFixed(2).replace(/0$/, "")) + " h";
   }
   function fmtMoney(n) {
@@ -380,7 +382,7 @@
     const el = $("avanceValeur");
     el.classList.remove("pos", "neg");
     const pos = avance >= 0;
-    countUp(el, Math.abs(avance), (v) => (pos ? "+" : "−") + fmtH(v).replace(" h", "") + " h");
+    countUp(el, Math.abs(avance), (v) => (pos ? "+" : "−") + fmtH(v));
     el.classList.add(pos ? "pos" : "neg");
     $("avanceLabel").textContent = neutral ? "" : pos ? "d'avance" : "de retard";
     $("avanceDetail").textContent = detail;
