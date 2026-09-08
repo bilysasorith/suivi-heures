@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <!-- Applique le thème mémorisé avant le rendu (évite le flash) -->
   <script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
-  <link rel="stylesheet" href="style.css?v=11" />
+  <link rel="stylesheet" href="style.css?v=12" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>" />
 </head>
 <body>
@@ -50,6 +50,12 @@
         <div class="ring-layout">
           <div class="ring" id="ring">
             <svg viewBox="0 0 120 120" width="132" height="132" aria-hidden="true">
+              <defs>
+                <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" class="rg1" />
+                  <stop offset="1" class="rg2" />
+                </linearGradient>
+              </defs>
               <circle class="ring-bg" cx="60" cy="60" r="52" />
               <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52" />
             </svg>

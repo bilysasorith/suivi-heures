@@ -253,7 +253,13 @@
         ? `<text class="axis-lbl" x="${x(p.i).toFixed(1)}" y="${H - 12}" text-anchor="middle">${fmtDateShort(p.start)}</text>` : ""
     ).join("");
 
-    const dots = pts.map((p) => `<circle class="dot" cx="${x(p.i).toFixed(1)}" cy="${y(p.real).toFixed(1)}" r="3.5"/>`).join("");
+    const dots = pts.map((p, k) =>
+      `<circle class="dot${k === n - 1 ? " last" : ""}" cx="${x(p.i).toFixed(1)}" cy="${y(p.real).toFixed(1)}" r="${k === n - 1 ? 5 : 3.5}"/>`
+    ).join("");
+    // Zones de survol invisibles pour l'info-bulle
+    const hits = pts.map((p) =>
+      `<circle class="hit" data-i="${p.i}" cx="${x(p.i).toFixed(1)}" cy="${y(p.real).toFixed(1)}" r="14" fill="transparent" style="pointer-events:all;cursor:pointer"/>`
+    ).join("");
 
     host.innerHTML = `
       <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Tendance cumulée">
@@ -262,6 +268,10 @@
             <stop offset="0" stop-color="var(--brand)" stop-opacity="0.28"/>
             <stop offset="1" stop-color="var(--brand)" stop-opacity="0"/>
           </linearGradient>
+          <linearGradient id="trendLine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="var(--brand-2)"/>
+            <stop offset="1" stop-color="var(--brand)"/>
+          </linearGradient>
         </defs>
         ${grid}
         <polyline class="obj-line" points="${objPts}"/>
@@ -269,7 +279,16 @@
         <path class="real-line" d="${lineD}"/>
         ${dots}
         ${xlabels}
+        ${hits}
       </svg>`;
+
+    // Info-bulle au survol des points
+    host.querySelectorAll(".hit").forEach((c) => {
+      const p = pts[+c.getAttribute("data-i")];
+      const html = `<b>${fmtDateShort(p.start)}</b> · ${fmtH(p.real)} cumulées`;
+      c.addEventListener("mousemove", (e) => showTip(html, e.clientX, e.clientY));
+      c.addEventListener("mouseleave", hideTip);
+    });
 
     if (!prefersReduced) {
       const line = host.querySelector(".real-line");
@@ -466,21 +485,26 @@
   function renderChart(chartWeeks) {
     const chart = $("chart");
     chart.innerHTML = "";
-    const maxH = Math.max(target, ...chartWeeks.map((w) => w.heures), 1);
+    const maxH = Math.max(target, ...chartWeeks.map((w) => w.heures), 1) * 1.18; // marge en haut pour les valeurs
     chartWeeks.forEach((w, i) => {
+      const good = target > 0 && w.heures >= target;
       const col = document.createElement("div"); col.className = "bar-col";
       const wrap = document.createElement("div"); wrap.className = "bar-wrap";
+      const val = document.createElement("div");
+      val.className = "bar-val" + (good ? " good" : "");
+      val.textContent = w.heures > 0 ? fmtH(w.heures).replace(" h", "") : "";
       const bar = document.createElement("div");
-      bar.className = "bar" + (target > 0 && w.heures >= target ? " good" : "");
+      bar.className = "bar" + (good ? " good" : "");
       const finalH = (w.heures / maxH) * 100 + "%";
       if (prefersReduced) {
-        bar.style.height = finalH;
+        bar.style.height = finalH; val.style.opacity = "1";
       } else {
         bar.style.height = "0%";
         bar.style.transitionDelay = i * 45 + "ms";
-        requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.height = finalH; }));
+        val.style.transitionDelay = (i * 45 + 500) + "ms";
+        requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.height = finalH; val.style.opacity = "1"; }));
       }
-      wrap.appendChild(bar);
+      wrap.appendChild(val); wrap.appendChild(bar);
       const lbl = document.createElement("div"); lbl.className = "bar-lbl"; lbl.textContent = fmtDateShort(w.start);
       col.appendChild(wrap); col.appendChild(lbl); chart.appendChild(col);
       const tipHtml = `<b>${fmtDateShort(w.start)}</b> · ${fmtH(w.heures)}`;

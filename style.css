@@ -64,7 +64,7 @@ body {
 /* ---------- Header ---------- */
 .site-header {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-  gap: 18px; margin-bottom: 28px;
+  gap: 18px; margin-bottom: 22px; padding-bottom: 22px; border-bottom: 1px solid var(--line);
 }
 .identity { display: flex; align-items: center; gap: 16px; }
 .monogram {
@@ -214,9 +214,11 @@ h1 .client { color: var(--ink-2); font-weight: 700; }
 .ring svg { transform: rotate(-90deg); }
 .ring-bg { fill: none; stroke: var(--line); stroke-width: 11; }
 .ring-fg {
-  fill: none; stroke: url(#g) var(--brand); stroke: var(--brand); stroke-width: 11; stroke-linecap: round;
+  fill: none; stroke: url(#ringGrad); stroke-width: 11; stroke-linecap: round;
   stroke-dasharray: 326.7; stroke-dashoffset: 326.7; transition: stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1);
 }
+#ringGrad .rg1 { stop-color: var(--brand-2); }
+#ringGrad .rg2 { stop-color: var(--brand); }
 .ring.full .ring-fg { stroke: var(--good); }
 .ring-center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
 .ring-pct { font-size: 27px; font-weight: 800; letter-spacing: -.02em; }
@@ -272,7 +274,9 @@ h1 .client { color: var(--ink-2); font-weight: 700; }
   height: 190px; padding: 22px 6px 0; border-bottom: 1px solid var(--line);
 }
 .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; min-width: 0; }
-.bar-wrap { width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.bar-wrap { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.bar-val { font-size: 11.5px; font-weight: 700; color: var(--brand); font-variant-numeric: tabular-nums; margin-bottom: 5px; opacity: 0; transition: opacity .4s ease; line-height: 1; }
+.bar-val.good { color: var(--good); }
 .bar {
   width: 72%; max-width: 40px; border-radius: 7px 7px 3px 3px; min-height: 3px;
   background: linear-gradient(180deg, var(--brand-2), var(--brand));
@@ -317,7 +321,8 @@ footer code { background: var(--card); border: 1px solid var(--line); padding: 2
 .trend .axis-lbl { fill: var(--muted); font-size: 11px; font-family: inherit; }
 .trend .obj-line { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 5 5; opacity: .75; }
 .trend .real-area { fill: url(#trendFill); }
-.trend .real-line { fill: none; stroke: var(--brand); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.trend .real-line { fill: none; stroke: url(#trendLine); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.trend .dot.last { fill: var(--brand); filter: drop-shadow(0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent)); }
 .trend .real-line.draw { stroke-dashoffset: var(--len); animation: drawLine 1.1s cubic-bezier(.4,0,.2,1) forwards; }
 @keyframes drawLine { to { stroke-dashoffset: 0; } }
 .trend .dot { fill: var(--brand); stroke: var(--card); stroke-width: 2; }
