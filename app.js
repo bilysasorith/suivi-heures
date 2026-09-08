@@ -142,6 +142,134 @@
     });
   }
 
+  // ---------- Thème clair/sombre ----------
+  (function themeToggle() {
+    const btn = document.getElementById("themeBtn");
+    if (!btn) return;
+    const root = document.documentElement;
+    const systemDark = () => window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    function current() {
+      return root.getAttribute("data-theme") || (systemDark() ? "dark" : "light");
+    }
+    function paint() { btn.textContent = current() === "dark" ? "☀️" : "🌙"; }
+    paint();
+    btn.addEventListener("click", () => {
+      const next = current() === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("theme", next); } catch (e) {}
+      paint();
+    });
+  })();
+
+  // ---------- Confettis (objectif atteint) ----------
+  function launchConfetti() {
+    if (prefersReduced) return;
+    const cv = document.getElementById("confetti");
+    if (!cv) return;
+    cv.style.display = "block";
+    const ctx = cv.getContext("2d");
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const colors = ["#2b57e6", "#5b8bff", "#0f9d63", "#f0b45c", "#ffffff"];
+    const parts = [];
+    for (let i = 0; i < 140; i++) {
+      parts.push({
+        x: innerWidth / 2 + (Math.random() - .5) * 160, y: innerHeight * 0.3,
+        vx: (Math.random() - .5) * 11, vy: Math.random() * -10 - 4,
+        g: 0.26 + Math.random() * 0.12, s: 5 + Math.random() * 6,
+        rot: Math.random() * Math.PI, vr: (Math.random() - .5) * 0.32,
+        col: colors[i % colors.length],
+      });
+    }
+    const start = performance.now();
+    function frame(now) {
+      const t = now - start;
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      let alive = false;
+      const a = Math.max(0, 1 - t / 2600);
+      parts.forEach((p) => {
+        p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vx *= 0.99;
+        if (p.y < innerHeight + 24 && a > 0) alive = true;
+        ctx.save(); ctx.globalAlpha = a; ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.col; ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.6); ctx.restore();
+      });
+      if (alive && t < 3200) requestAnimationFrame(frame);
+      else { ctx.clearRect(0, 0, innerWidth, innerHeight); cv.style.display = "none"; }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- Tooltip du graphique ----------
+  const tip = document.getElementById("chartTip");
+  function showTip(html, x, y) {
+    if (!tip) return;
+    tip.innerHTML = html; tip.classList.add("show");
+    tip.style.left = Math.min(x + 14, innerWidth - 140) + "px";
+    tip.style.top = (y - 44) + "px";
+  }
+  function hideTip() { if (tip) tip.classList.remove("show"); }
+
+  // ---------- Courbe de tendance cumulée (SVG) ----------
+  function renderTrend(rows, weeklyTarget) {
+    const host = document.getElementById("trend");
+    if (!host) return;
+    const asc = rows.slice().sort((a, b) => a.start - b.start);
+    if (asc.length === 0) { host.innerHTML = `<div class="empty">Aucune donnée pour cette période.</div>`; return; }
+
+    let cum = 0;
+    const pts = asc.map((r, i) => { cum += r.heures; return { i, start: r.start, real: cum, obj: (i + 1) * weeklyTarget }; });
+    const n = pts.length;
+    const W = 800, H = 240, PL = 44, PR = 16, PT = 16, PB = 34;
+    const maxY = Math.max(pts[n - 1].real, pts[n - 1].obj, 1);
+    const x = (i) => PL + (n === 1 ? (W - PL - PR) / 2 : (i / (n - 1)) * (W - PL - PR));
+    const y = (v) => PT + (1 - v / maxY) * (H - PT - PB);
+
+    const realPts = pts.map((p) => `${x(p.i).toFixed(1)},${y(p.real).toFixed(1)}`);
+    const objPts = pts.map((p) => `${x(p.i).toFixed(1)},${y(p.obj).toFixed(1)}`).join(" ");
+    const areaD = `M ${x(0).toFixed(1)},${y(0).toFixed(1)} L ${realPts.join(" L ")} L ${x(n - 1).toFixed(1)},${y(0).toFixed(1)} Z`;
+    const lineD = `M ${realPts.join(" L ")}`;
+
+    // repères horizontaux (0, moitié, max)
+    const grid = [0, maxY / 2, maxY].map((v) =>
+      `<line class="grid-line" x1="${PL}" y1="${y(v).toFixed(1)}" x2="${W - PR}" y2="${y(v).toFixed(1)}"/>` +
+      `<text class="axis-lbl" x="${PL - 8}" y="${(y(v) + 3).toFixed(1)}" text-anchor="end">${Math.round(v)} h</text>`
+    ).join("");
+
+    // étiquettes X (on en montre ~6 max)
+    const step = Math.max(1, Math.ceil(n / 6));
+    const xlabels = pts.map((p) =>
+      (p.i % step === 0 || p.i === n - 1)
+        ? `<text class="axis-lbl" x="${x(p.i).toFixed(1)}" y="${H - 12}" text-anchor="middle">${fmtDateShort(p.start)}</text>` : ""
+    ).join("");
+
+    const dots = pts.map((p) => `<circle class="dot" cx="${x(p.i).toFixed(1)}" cy="${y(p.real).toFixed(1)}" r="3.5"/>`).join("");
+
+    host.innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Tendance cumulée">
+        <defs>
+          <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="var(--brand)" stop-opacity="0.28"/>
+            <stop offset="1" stop-color="var(--brand)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        ${grid}
+        <polyline class="obj-line" points="${objPts}"/>
+        <path class="real-area" d="${areaD}"/>
+        <path class="real-line" d="${lineD}"/>
+        ${dots}
+        ${xlabels}
+      </svg>`;
+
+    if (!prefersReduced) {
+      const line = host.querySelector(".real-line");
+      const len = line.getTotalLength();
+      line.style.setProperty("--len", len);
+      line.style.strokeDasharray = len;
+      line.classList.add("draw");
+    }
+  }
+
   // ---------- Rendu d'un scope ('general' | {y,m}) ----------
   const C = 2 * Math.PI * 52;
 
@@ -208,6 +336,7 @@
 
     renderWeeksTable(weekRows, currentWeekKey);
     renderChart(weekRows.slice().sort((a, b) => a.start - b.start).slice(-12));
+    renderTrend(weekRows, target);
     $("panelLog").style.display = "none"; // pas de détail des séances en vue Générale
   }
 
@@ -267,6 +396,7 @@
 
     renderWeeksTable(weekRows, weekKey(today));
     renderChart(weekRows.slice().sort((a, b) => a.start - b.start));
+    renderTrend(weekRows, target);
     $("panelLog").style.display = ""; // détail des séances visible dans la vue mois
     renderLog(scoped.slice(), true);
   }
@@ -277,7 +407,9 @@
     $("semaineObjectif").textContent = "/ " + fmtH(denom);
     $("ringFg").style.strokeDashoffset = String(C * (1 - pct / 100));
     countUp($("ringPct"), pct, (v) => Math.round(v) + "%");
-    $("ring").classList.toggle("full", denom > 0 && hours >= denom);
+    const reached = denom > 0 && hours >= denom;
+    $("ring").classList.toggle("full", reached);
+    if (reached) setTimeout(launchConfetti, 450); // 🎉 objectif atteint
   }
 
   function setAvance(avance, detail, totalH, attendu, neutral) {
@@ -331,7 +463,6 @@
       const bar = document.createElement("div");
       bar.className = "bar" + (target > 0 && w.heures >= target ? " good" : "");
       const finalH = (w.heures / maxH) * 100 + "%";
-      bar.title = `${fmtDateShort(w.start)} : ${fmtH(w.heures)}`;
       if (prefersReduced) {
         bar.style.height = finalH;
       } else {
@@ -342,6 +473,9 @@
       wrap.appendChild(bar);
       const lbl = document.createElement("div"); lbl.className = "bar-lbl"; lbl.textContent = fmtDateShort(w.start);
       col.appendChild(wrap); col.appendChild(lbl); chart.appendChild(col);
+      const tipHtml = `<b>${fmtDateShort(w.start)}</b> · ${fmtH(w.heures)}`;
+      col.addEventListener("mousemove", (e) => showTip(tipHtml, e.clientX, e.clientY));
+      col.addEventListener("mouseleave", hideTip);
     });
     if (chartWeeks.length) {
       const line = document.createElement("div"); line.className = "chart-target";

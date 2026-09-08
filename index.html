@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=5" />
+  <!-- Applique le thème mémorisé avant le rendu (évite le flash) -->
+  <script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="style.css?v=6" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>" />
 </head>
 <body>
@@ -24,8 +26,11 @@
         </div>
       </div>
       <div class="header-side">
-        <div class="status-chip" id="statusChip">
-          <span class="dot"></span><span id="statusChipText">—</span>
+        <div class="head-row">
+          <button class="theme-btn" id="themeBtn" type="button" title="Changer de thème" aria-label="Changer de thème">🌙</button>
+          <div class="status-chip" id="statusChip">
+            <span class="dot"></span><span id="statusChipText">—</span>
+          </div>
         </div>
         <div class="maj" id="maj"></div>
       </div>
@@ -106,6 +111,15 @@
       <div class="chart" id="chart"></div>
     </section>
 
+    <!-- Tendance cumulée -->
+    <section class="panel" id="panelTrend">
+      <div class="panel-head">
+        <h2>Tendance cumulée</h2>
+        <span class="legend"><span class="legend-dot brand"></span>réalisé cumulé<span class="legend-dot muted-dot"></span>objectif</span>
+      </div>
+      <div class="trend" id="trend"></div>
+    </section>
+
     <!-- Récap par semaine -->
     <section class="panel">
       <div class="panel-head"><h2>Récapitulatif par semaine</h2></div>
@@ -147,6 +161,9 @@
       <span>Site statique hébergé sur GitHub Pages</span>
     </footer>
   </div>
+
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <div id="chartTip" class="chart-tip" aria-hidden="true"></div>
 
   <!-- Chargement anti-cache : data.js (tes heures) et app.js sont toujours rechargés,
        pour que tes mises à jour apparaissent immédiatement sans vider le cache. -->
