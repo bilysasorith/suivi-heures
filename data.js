@@ -29,9 +29,6 @@ window.SUIVI = {
 
   // Ajoute tes séances ici (les plus récentes en haut ou en bas, peu importe) :
   heures: [
-    // Exemples — remplace-les par tes vraies séances :
-    { date: "2026-09-01", heures: 3,   note: "Mise en place / cartes statistiques" },
-    { date: "2026-09-02", heures: 2.5, note: "Traitement des données PowerQuery" },
-    { date: "2026-09-04", heures: 4,   note: "Génération des présentations" },
+    { date: "2026-09-01", heures: 1.5, note: "PPT Août 2026" },
   ],
 };
