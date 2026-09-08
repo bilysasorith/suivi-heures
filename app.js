@@ -326,6 +326,11 @@
 
   // ----- Vue Générale -----
   function renderGeneral(totalHeures, totalGains, byWeek) {
+    // Vue complète : on réaffiche tout
+    $("cardAvance").style.display = "";
+    $("panelTrend").style.display = "";
+    document.getElementById("hero").classList.remove("solo");
+
     const currentWeekKey = weekKey(today);
     const cur = byWeek.get(currentWeekKey) || { heures: 0 };
     const semaineHeures = cur.heures;
@@ -397,16 +402,11 @@
       ? "🎉 Objectif du mois atteint !"
       : totalHeures > 0 ? `Il reste ${fmtH(reste)} pour l'objectif du mois.` : "Aucune heure saisie ce mois-ci.";
 
-    // Carte 2 : Objectif du mois (neutre, pas d'avance -> pas d'ambiguïté)
-    $("avanceCardTitle").textContent = "Objectif — " + nomMois;
-    const av = $("avanceValeur");
-    av.classList.remove("pos", "neg");
-    countUp(av, objectif, (v) => fmtH(v));
-    $("avanceLabel").textContent = "visé";
-    $("avanceDetail").textContent = `${fmtH(totalHeures)} réalisées · reste ${fmtH(reste)}`;
-    const card = $("cardAvance");
-    card.classList.remove("ok", "warn");
-    $("avanceFill").style.width = pct + "%";
+    // Vue mois épurée : on masque la carte "Objectif" (doublon de l'anneau)
+    // et la courbe "Tendance cumulée" (peu utile sur un seul mois).
+    $("cardAvance").style.display = "none";
+    $("panelTrend").style.display = "none";
+    document.getElementById("hero").classList.add("solo");
 
     // KPIs (mois)
     $("lblTotal").textContent = "Total heures du mois";
@@ -425,7 +425,6 @@
 
     renderWeeksTable(weekRows, weekKey(today));
     renderChart(weekRows.slice().sort((a, b) => a.start - b.start));
-    renderTrend(weekRows, target);
     $("panelLog").style.display = ""; // détail des séances visible dans la vue mois
     renderLog(scoped.slice(), true);
   }
