@@ -473,7 +473,8 @@
       tb.innerHTML = `<tr><td colspan="3" class="muted center">${isMonth ? "Aucune séance ce mois-ci." : "Aucune séance saisie. Ajoute tes heures dans data.js."}</td></tr>`;
       return;
     }
-    const sorted = list.slice().sort((a, b) => a.date - b.date);
+    // Du plus récent au plus ancien (dernière semaine en premier)
+    const sorted = list.slice().sort((a, b) => b.date - a.date);
     let lastWk = null;
     sorted.forEach((e) => {
       const wk = weekKey(e.date);
