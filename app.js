@@ -233,89 +233,6 @@
   }
   function hideTip() { if (tip) tip.classList.remove("show"); }
 
-  // ---------- Courbe de tendance cumulée (SVG) ----------
-  function renderTrend(rows, weeklyTarget) {
-    const host = document.getElementById("trend");
-    if (!host) return;
-    const asc = rows.slice().sort((a, b) => a.start - b.start);
-    if (asc.length === 0) { host.innerHTML = `<div class="empty">Aucune donnée pour cette période.</div>`; return; }
-
-    let cum = 0;
-    const pts = asc.map((r, i) => { cum += r.heures; return { i, start: r.start, real: cum, obj: (i + 1) * weeklyTarget }; });
-    const n = pts.length;
-    // Largeur = largeur réelle du conteneur => texte net et non déformé sur mobile
-    const W = Math.max(320, Math.round(host.clientWidth || 800));
-    const narrow = W < 480;
-    const H = narrow ? 200 : 240;
-    const PL = narrow ? 34 : 44, PR = 14, PT = 16, PB = 32;
-    const maxY = Math.max(pts[n - 1].real, pts[n - 1].obj, 1);
-    const x = (i) => PL + (n === 1 ? (W - PL - PR) / 2 : (i / (n - 1)) * (W - PL - PR));
-    const y = (v) => PT + (1 - v / maxY) * (H - PT - PB);
-
-    const realPts = pts.map((p) => `${x(p.i).toFixed(1)},${y(p.real).toFixed(1)}`);
-    const objPts = pts.map((p) => `${x(p.i).toFixed(1)},${y(p.obj).toFixed(1)}`).join(" ");
-    const areaD = `M ${x(0).toFixed(1)},${y(0).toFixed(1)} L ${realPts.join(" L ")} L ${x(n - 1).toFixed(1)},${y(0).toFixed(1)} Z`;
-    const lineD = `M ${realPts.join(" L ")}`;
-
-    // repères horizontaux (0, moitié, max)
-    const grid = [0, maxY / 2, maxY].map((v) =>
-      `<line class="grid-line" x1="${PL}" y1="${y(v).toFixed(1)}" x2="${W - PR}" y2="${y(v).toFixed(1)}"/>` +
-      `<text class="axis-lbl" x="${PL - 8}" y="${(y(v) + 3).toFixed(1)}" text-anchor="end">${Math.round(v)} h</text>`
-    ).join("");
-
-    // étiquettes X (espacées selon la largeur dispo)
-    const step = Math.max(1, Math.ceil(n / Math.max(3, Math.floor((W - PL - PR) / 90))));
-    const xlabels = pts.map((p) =>
-      (p.i % step === 0 || p.i === n - 1)
-        ? `<text class="axis-lbl" x="${x(p.i).toFixed(1)}" y="${H - 12}" text-anchor="middle">${fmtDateShort(p.start)}</text>` : ""
-    ).join("");
-
-    const dots = pts.map((p, k) =>
-      `<circle class="dot${k === n - 1 ? " last" : ""}" cx="${x(p.i).toFixed(1)}" cy="${y(p.real).toFixed(1)}" r="${k === n - 1 ? 5 : 3.5}"/>`
-    ).join("");
-    // Zones de survol invisibles pour l'info-bulle
-    const hits = pts.map((p) =>
-      `<circle class="hit" data-i="${p.i}" cx="${x(p.i).toFixed(1)}" cy="${y(p.real).toFixed(1)}" r="14" fill="transparent" style="pointer-events:all;cursor:pointer"/>`
-    ).join("");
-
-    host.innerHTML = `
-      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Tendance cumulée">
-        <defs>
-          <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="var(--brand)" stop-opacity="0.28"/>
-            <stop offset="1" stop-color="var(--brand)" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="trendLine" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="var(--brand-2)"/>
-            <stop offset="1" stop-color="var(--brand)"/>
-          </linearGradient>
-        </defs>
-        ${grid}
-        <polyline class="obj-line" points="${objPts}"/>
-        <path class="real-area" d="${areaD}"/>
-        <path class="real-line" d="${lineD}"/>
-        ${dots}
-        ${xlabels}
-        ${hits}
-      </svg>`;
-
-    // Info-bulle au survol des points
-    host.querySelectorAll(".hit").forEach((c) => {
-      const p = pts[+c.getAttribute("data-i")];
-      const html = `<b>${fmtDateShort(p.start)}</b> · ${fmtH(p.real)} cumulées`;
-      c.addEventListener("mousemove", (e) => showTip(html, e.clientX, e.clientY));
-      c.addEventListener("mouseleave", hideTip);
-    });
-
-    if (!prefersReduced) {
-      const line = host.querySelector(".real-line");
-      const len = line.getTotalLength();
-      line.style.setProperty("--len", len);
-      line.style.strokeDasharray = len;
-      line.classList.add("draw");
-    }
-  }
-
   // ---------- Rendu d'un scope ('general' | {y,m}) ----------
   const C = 2 * Math.PI * 52;
 
@@ -343,9 +260,8 @@
 
   // ----- Vue Générale -----
   function renderGeneral(totalHeures, totalGains, byWeek) {
-    // Vue complète : on réaffiche tout
+    // Vue complète : on réaffiche la carte Avance
     $("cardAvance").style.display = "";
-    $("panelTrend").style.display = "";
     document.getElementById("hero").classList.remove("solo");
 
     const currentWeekKey = weekKey(today);
@@ -387,7 +303,6 @@
 
     renderWeeksTable(weekRows, currentWeekKey);
     renderChart(weekRows.slice().sort((a, b) => a.start - b.start).slice(-(window.innerWidth < 560 ? 8 : 12)));
-    renderTrend(weekRows, target);
     $("panelLog").style.display = "none"; // pas de détail des séances en vue Générale
   }
 
@@ -419,10 +334,8 @@
       ? "🎉 Objectif du mois atteint !"
       : totalHeures > 0 ? `Il reste ${fmtH(reste)} pour l'objectif du mois.` : "Aucune heure saisie ce mois-ci.";
 
-    // Vue mois épurée : on masque la carte "Objectif" (doublon de l'anneau)
-    // et la courbe "Tendance cumulée" (peu utile sur un seul mois).
+    // Vue mois épurée : on masque la carte "Objectif" (doublon de l'anneau).
     $("cardAvance").style.display = "none";
-    $("panelTrend").style.display = "none";
     document.getElementById("hero").classList.add("solo");
 
     // KPIs (mois)
