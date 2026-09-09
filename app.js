@@ -66,11 +66,13 @@
     return Math.floor((startOfWeek(toDate) - fromMonday) / (7 * 864e5)) + 1;
   }
 
-  // ---------- Onglets (Général + un par mois de la mission jusqu'à décembre) ----------
-  const startYear = debutRaw.getFullYear();
-  const startMonth = debutRaw.getMonth(); // 0-based
+  // ---------- Onglets (Général + un par mois, du début jusqu'à déc. de l'année en cours) ----------
+  const endYear = Math.max(debutRaw.getFullYear(), today.getFullYear());
   const months = [];
-  for (let m = startMonth; m <= 11; m++) months.push({ y: startYear, m });
+  for (let cur = new Date(debutRaw.getFullYear(), debutRaw.getMonth(), 1), end = new Date(endYear, 11, 1);
+       cur <= end; cur.setMonth(cur.getMonth() + 1)) {
+    months.push({ y: cur.getFullYear(), m: cur.getMonth() });
+  }
 
   const tabsEl = document.getElementById("tabs");
   const isFuture = (mm) => mm.y > today.getFullYear() || (mm.y === today.getFullYear() && mm.m > today.getMonth());

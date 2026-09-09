@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Saisie des heures</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <script>(function(){try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=18" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='26' fill='%232b57e6'/><g fill='none' stroke='%23fff' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'><line x1='50' y1='18' x2='50' y2='31'/><circle cx='50' cy='58' r='27'/><line x1='50' y1='58' x2='50' y2='40'/></g></svg>" />
+  <style>
+    .form-grid { display: grid; grid-template-columns: 150px 130px 1fr auto; gap: 10px; align-items: end; }
+    @media (max-width: 620px) { .form-grid { grid-template-columns: 1fr 1fr; } .form-grid .f-note, .form-grid .f-add { grid-column: 1 / -1; } }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
+    input[type="date"], input[type="text"] {
+      width: 100%; font: inherit; font-size: 14px; color: var(--ink); background: var(--card);
+      border: 1px solid var(--line-strong); border-radius: 10px; padding: 9px 11px; box-sizing: border-box;
+    }
+    input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
+    .btn { font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; border: none; border-radius: 10px; padding: 10px 18px; color: #fff; background: linear-gradient(140deg, var(--brand), var(--brand-2)); }
+    .btn.ghost { background: var(--card); color: var(--brand); border: 1px solid var(--line-strong); }
+    .btn:active { transform: scale(.97); }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .rm { cursor: pointer; border: none; background: transparent; color: var(--danger); font-size: 16px; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
+    .rm:hover { background: var(--danger-soft); }
+    pre#out { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; overflow: auto; font-size: 12.5px; max-height: 320px; white-space: pre; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+    .ok-msg { color: var(--good); font-weight: 600; font-size: 13px; }
+    .backlink { font-size: 13px; color: var(--brand); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <div class="identity">
+        <div class="monogram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="2.5" x2="12" y2="5" /><circle cx="12" cy="14" r="7.4" /><line x1="12" y1="14" x2="12" y2="9.6" />
+          </svg>
+        </div>
+        <div>
+          <div class="accent-line" style="width:60px;height:4px;background:var(--brand);border-radius:2px;margin-bottom:10px"></div>
+          <h1>Saisie des heures</h1>
+          <p class="subtitle">Ajoute tes séances, puis copie le résultat dans <code>data.js</code>.</p>
+        </div>
+      </div>
+      <a class="backlink" href="index.html">← Voir le suivi</a>
+    </header>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Ajouter une séance</h2></div>
+      <div class="form-grid">
+        <div><label for="f-date">Date</label><input type="date" id="f-date" /></div>
+        <div><label for="f-duree">Durée</label><input type="text" id="f-duree" placeholder="1h30, 45min, 2" /></div>
+        <div class="f-note"><label for="f-note">Tâche</label><input type="text" id="f-note" placeholder="Ce que tu as fait" /></div>
+        <div class="f-add"><button class="btn" id="add">Ajouter</button></div>
+      </div>
+      <div class="hint">Durée acceptée : <b>1h30</b>, <b>1h</b>, <b>45min</b>, <b>2</b> (= 2 h), <b>1,5</b>. Entrée = Ajouter.</div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Séances (<span id="count">0</span>)</h2></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Date</th><th class="right">Durée</th><th>Tâche</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Fichier data.js à copier</h2></div>
+      <div class="toolbar">
+        <button class="btn" id="copy">📋 Copier</button>
+        <button class="btn ghost" id="download">⬇︎ Télécharger data.js</button>
+        <span class="ok-msg" id="msg" style="display:none">Copié ✓</span>
+      </div>
+      <p class="hint">Colle ce contenu dans <code>data.js</code> (remplace tout), puis commit + push. Le suivi se met à jour automatiquement.</p>
+      <pre id="out"></pre>
+    </section>
+  </div>
+
+  <!-- Charge data.js frais (anti-cache) de façon synchrone, avant le script d'init -->
+  <script>document.write('<script src="data.js?t=' + Date.now() + '"><\/script>');</script>
+  <script>
+    (function () {
+      "use strict";
+      const cfg = (window.SUIVI && window.SUIVI.config) || {};
+      const $ = (id) => document.getElementById(id);
+
+      // Liste de travail (repart de data.js à chaque ouverture)
+      let items = ((window.SUIVI && window.SUIVI.heures) || [])
+        .filter((e) => e && e.date && Number(e.heures) > 0)
+        .map((e) => ({ date: String(e.date), heures: Number(e.heures), note: e.note || "" }));
+
+      // "1h30", "45min", "2", "1,5" -> heures décimales (arrondi à la minute)
+      function parseDuree(s) {
+        s = String(s || "").trim().toLowerCase().replace(",", ".").replace(/\s+/g, "");
+        if (!s) return null;
+        let m = s.match(/^(\d+)h(\d{1,2})?$/);            // 1h30 / 1h
+        if (m) return Math.round((+m[1] + (m[2] ? +m[2] / 60 : 0)) * 100) / 100;
+        m = s.match(/^(\d+)(?:min|m)$/);                   // 45min / 45m
+        if (m) return Math.round((+m[1] / 60) * 100) / 100;
+        m = s.match(/^\d+(\.\d+)?$/);                      // 2 / 1.5
+        if (m) return Math.round(parseFloat(s) * 100) / 100;
+        return null;
+      }
+      function fmtH(h) {
+        const t = Math.round(h * 60);
+        if (t === 0) return "0 h";
+        if (t < 60) return t + " min";
+        const hh = Math.floor(t / 60), mm = t % 60;
+        return mm === 0 ? hh + " h" : hh + " h " + String(mm).padStart(2, "0");
+      }
+      function fmtDate(s) {
+        const [y, m, d] = s.split("-").map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+      }
+
+      function render() {
+        items.sort((a, b) => (a.date < b.date ? 1 : -1)); // plus récent en haut
+        $("count").textContent = items.length;
+        const tb = $("rows"); tb.innerHTML = "";
+        items.forEach((e, i) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td class="mono nowrap">${fmtDate(e.date)}</td><td class="right mono">${fmtH(e.heures)}</td><td>${escapeHtml(e.note)}</td>`;
+          const td = document.createElement("td"); td.className = "right";
+          const b = document.createElement("button"); b.className = "rm"; b.textContent = "✕"; b.title = "Supprimer";
+          b.addEventListener("click", () => { items.splice(i, 1); render(); });
+          td.appendChild(b); tr.appendChild(td); tb.appendChild(tr);
+        });
+        $("out").textContent = genFile();
+      }
+
+      function genFile() {
+        const asc = items.slice().sort((a, b) => (a.date < b.date ? -1 : 1));
+        const lignes = asc.map((e) => `    { date: ${JSON.stringify(e.date)}, heures: ${e.heures}, note: ${JSON.stringify(e.note)} },`).join("\n");
+        return `/* Fichier généré par saisie.html — Suivi des heures */
+window.SUIVI = {
+  config: ${JSON.stringify(cfg, null, 2).replace(/\n/g, "\n  ")},
+
+  heures: [
+${lignes}
+  ],
+};
+`;
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      }
+
+      function add() {
+        const date = $("f-date").value;
+        const h = parseDuree($("f-duree").value);
+        const note = $("f-note").value.trim();
+        if (!date) { $("f-date").focus(); return; }
+        if (h == null || h <= 0) { $("f-duree").focus(); $("f-duree").select(); return; }
+        items.push({ date, heures: h, note });
+        $("f-duree").value = ""; $("f-note").value = "";
+        render();
+        $("f-note").focus();
+      }
+
+      $("add").addEventListener("click", add);
+      ["f-duree", "f-note", "f-date"].forEach((id) =>
+        $(id).addEventListener("keydown", (e) => { if (e.key === "Enter") add(); }));
+
+      $("copy").addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(genFile());
+          const m = $("msg"); m.style.display = ""; setTimeout(() => (m.style.display = "none"), 1800);
+        } catch (e) {
+          const pre = $("out"); const r = document.createRange(); r.selectNodeContents(pre);
+          const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        }
+      });
+
+      $("download").addEventListener("click", () => {
+        const blob = new Blob([genFile()], { type: "text/javascript" });
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+        a.download = "data.js"; a.click(); URL.revokeObjectURL(a.href);
+      });
+
+      // Date par défaut = aujourd'hui
+      const t = new Date();
+      $("f-date").value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+      render();
+    })();
+  </script>
+</body>
+</html>
