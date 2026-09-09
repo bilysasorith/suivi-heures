@@ -4,14 +4,17 @@
 
   const DATA = window.SUIVI || { config: {}, heures: [] };
   const cfg = DATA.config;
-  const rate = Number(cfg.tarifHoraire) || 0;
   const target = Number(cfg.heuresParSemaine) || 0;
-  const devise = cfg.devise || "€";
 
   // ---------- Helpers dates (lundi = début de semaine) ----------
+  // Renvoie une Date valide, ou null si le format n'est pas AAAA-MM-JJ ou si la date n'existe pas.
   function parseDate(s) {
-    const [y, m, d] = String(s).split("-").map(Number);
-    return new Date(y, (m || 1) - 1, d || 1);
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s == null ? "" : s).trim());
+    if (!m) return null;
+    const y = +m[1], mo = +m[2], d = +m[3];
+    const dt = new Date(y, mo - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
+    return dt;
   }
   function startOfWeek(date) {
     const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -21,18 +24,11 @@
   }
   function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
   function ownerMonth(date) { const thu = addDays(startOfWeek(date), 3); return { y: thu.getFullYear(), m: thu.getMonth() }; }
-  function fmtDate(date) { return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }); }
   function fmtDateLong(date) {
     const d = date.getDate();
     return `${d === 1 ? "1er" : d} ${MOIS[date.getMonth()]} ${date.getFullYear()}`;
   }
   function fmtDateShort(date) { return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }); }
-  function fmtRange(a, b) {
-    const mois = a.toLocaleDateString("fr-FR", { month: "short" });
-    if (a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear())
-      return `${a.getDate()}–${b.getDate()} ${mois}`;
-    return `${fmtDateShort(a)} – ${fmtDateShort(b)}`;
-  }
   function weekKey(date) {
     const s = startOfWeek(date);
     return `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, "0")}-${String(s.getDate()).padStart(2, "0")}`;
@@ -44,9 +40,6 @@
     const hh = Math.floor(totalMin / 60), mm = totalMin % 60;
     return mm === 0 ? hh + " h" : hh + " h " + String(mm).padStart(2, "0"); // ex. "3 h 50"
   }
-  function fmtMoney(n) {
-    return new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n) + " " + devise;
-  }
   const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
   const MOIS_COURT = ["Janv.", "Févr.", "Mars", "Avr.", "Mai", "Juin", "Juil.", "Août", "Sept.", "Oct.", "Nov.", "Déc."];
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -54,12 +47,17 @@
   // ---------- Données de base ----------
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const debutRaw = parseDate(cfg.debut);
+  const debutRaw = parseDate(cfg.debut) || today; // fallback si config invalide
   const debut = startOfWeek(debutRaw);
 
   const entries = (DATA.heures || [])
-    .filter((e) => e && e.date && Number(e.heures) > 0)
-    .map((e) => ({ date: parseDate(e.date), heures: Number(e.heures), note: e.note || "" }))
+    .map((e) => {
+      if (!e || !(Number(e.heures) > 0)) return null;
+      const d = parseDate(e.date);
+      if (!d) { console.warn("Séance ignorée (date invalide) :", e); return null; }
+      return { date: d, heures: Number(e.heures), note: e.note || "" };
+    })
+    .filter(Boolean)
     .sort((a, b) => a.date - b.date);
 
   // Nombre de lundis (débuts de semaine) sur [from, to] inclus, alignés à debut
@@ -79,7 +77,6 @@
   const tabDefs = [{ id: "general", label: "Général" }].concat(
     months.map((mm) => ({ id: `${mm.y}-${mm.m}`, label: MOIS_COURT[mm.m] + " " + String(mm.y).slice(2), scope: mm, future: isFuture(mm) }))
   );
-  let activeTab = "general";
 
   tabDefs.forEach((t) => {
     const b = document.createElement("button");
@@ -98,7 +95,6 @@
   });
 
   function selectTab(id) {
-    activeTab = id;
     Array.from(tabsEl.children).forEach((b) => b.classList.toggle("active", b.dataset.id === id));
     const def = tabDefs.find((t) => t.id === id);
     render(def && def.scope ? def.scope : "general");
@@ -106,7 +102,6 @@
 
   // ---------- Header (toujours global) ----------
   const $ = (id) => document.getElementById(id);
-  const totalHeuresGlobal = entries.reduce((s, e) => s + e.heures, 0);
   const weeksElapsedGlobal = countWeeksBetween(debut, today);
   // Avance = basée sur les semaines TERMINÉES (la semaine en cours ne compte pas
   // encore comme du retard tant qu'elle n'est pas finie).
@@ -157,8 +152,10 @@
   // ---------- Animations ----------
   const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  const countUpRAF = new WeakMap();
   function countUp(el, to, fmt, dur) {
     if (!el) return;
+    if (countUpRAF.has(el)) cancelAnimationFrame(countUpRAF.get(el)); // stoppe l'anim précédente
     if (prefersReduced) { el.textContent = fmt(to); return; }
     dur = dur || 850;
     const start = performance.now();
@@ -166,10 +163,10 @@
       const t = Math.min(1, (now - start) / dur);
       const e = 1 - Math.pow(1 - t, 3); // easeOutCubic
       el.textContent = fmt(to * e);
-      if (t < 1) requestAnimationFrame(tick);
-      else el.textContent = fmt(to);
+      if (t < 1) countUpRAF.set(el, requestAnimationFrame(tick));
+      else { el.textContent = fmt(to); countUpRAF.delete(el); }
     }
-    requestAnimationFrame(tick);
+    countUpRAF.set(el, requestAnimationFrame(tick));
   }
 
   function reveal() {
@@ -264,7 +261,6 @@
       : entries;
 
     const totalHeures = scoped.reduce((s, e) => s + e.heures, 0);
-    const totalGains = totalHeures * rate;
 
     // Regroupement par semaine
     const byWeek = new Map();
@@ -274,13 +270,13 @@
       byWeek.get(k).heures += e.heures;
     });
 
-    if (isMonth) renderMonth(scope, scoped, totalHeures, totalGains, byWeek);
-    else renderGeneral(totalHeures, totalGains, byWeek);
+    if (isMonth) renderMonth(scope, scoped, totalHeures, byWeek);
+    else renderGeneral(totalHeures, byWeek);
     reveal();
   }
 
   // ----- Vue Générale -----
-  function renderGeneral(totalHeures, totalGains, byWeek) {
+  function renderGeneral(totalHeures, byWeek) {
     // Vue complète : on réaffiche la carte Avance et les KPIs
     $("cardAvance").style.display = "";
     $("kpis").style.display = "";
@@ -295,7 +291,7 @@
 
     $("ringCardTitle").textContent = "Cette semaine";
     $("semainePeriode").textContent = `${fmtDateShort(lundi)} – ${fmtDateShort(addDays(lundi, 6))}`;
-    setRing(semaineHeures, target, semainePct);
+    setRing(semaineHeures, target, semainePct, "week:" + currentWeekKey);
     $("semaineReste").textContent = semaineHeures >= target
       ? "🎉 Objectif de la semaine atteint !"
       : `Il te reste ${fmtH(semaineReste)} à faire cette semaine.`;
@@ -329,7 +325,7 @@
   }
 
   // ----- Vue Mois -----
-  function renderMonth(scope, scoped, totalHeures, totalGains, byWeek) {
+  function renderMonth(scope, scoped, totalHeures, byWeek) {
     const nomMois = cap(MOIS[scope.m]) + " " + scope.y;
 
     // Semaines "possédées" par le mois = celles dont le JEUDI tombe dans le mois
@@ -351,7 +347,7 @@
     // Carte anneau : progression du mois
     $("ringCardTitle").textContent = "Progression — " + nomMois;
     $("semainePeriode").textContent = mondays.length + " sem.";
-    setRing(totalHeures, objectif, pct);
+    setRing(totalHeures, objectif, pct, "month:" + scope.y + "-" + scope.m);
     $("semaineReste").textContent = objectif > 0 && totalHeures >= objectif
       ? "🎉 Objectif du mois atteint !"
       : totalHeures > 0 ? `Il reste ${fmtH(reste)} pour l'objectif du mois.` : "Aucune heure saisie ce mois-ci.";
@@ -383,14 +379,18 @@
   }
 
   // ---------- Sous-rendus partagés ----------
-  function setRing(hours, denom, pct) {
+  const celebrated = new Set(); // objectifs déjà fêtés (évite de relancer les confettis à chaque ouverture)
+  function setRing(hours, denom, pct, key) {
     countUp($("semaineHeures"), hours, (v) => fmtH(v));
     $("semaineObjectif").textContent = "/ " + fmtH(denom);
     $("ringFg").style.strokeDashoffset = String(C * (1 - pct / 100));
     countUp($("ringPct"), pct, (v) => Math.round(v) + "%");
     const reached = denom > 0 && hours >= denom;
     $("ring").classList.toggle("full", reached);
-    if (reached) setTimeout(launchConfetti, 450); // 🎉 objectif atteint
+    if (reached && key && !celebrated.has(key)) { // 🎉 une seule fois par objectif atteint
+      celebrated.add(key);
+      setTimeout(launchConfetti, 450);
+    }
   }
 
   function setAvance(avance, detail, totalH, attendu, neutral) {
