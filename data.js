@@ -37,5 +37,6 @@ window.SUIVI = {
     { date: "2026-09-07", heures: 0.33, note: "Légère correction PPT + check fichier prévention (présence SIREN ou secteur ?)" },
     { date: "2026-09-08", heures: 2,   note: "Accès et analyse fichier Marketplace PCL à la demande de Katrin TILLMANS" },
     { date: "2026-09-08", heures: 1,   note: "Extraction, requête SQL WS EE + call avec Philippe LOPEZ + début tutoriel DBeaver" },
+    { date: "2026-09-09", heures: 1.5, note: "Requête SQL Ventilation par type d'inscription" },
   ],
 };
