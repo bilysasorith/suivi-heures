@@ -38,10 +38,11 @@
     return `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, "0")}-${String(s.getDate()).padStart(2, "0")}`;
   }
   function fmtH(h) {
-    const val = Math.round(h * 100) / 100;
-    if (val === 0) return "0 h";
-    if (val < 1) return Math.round(val * 60) + " min"; // < 1 h -> en minutes (plus parlant)
-    return (Number.isInteger(val) ? val : val.toFixed(2).replace(/0$/, "")) + " h";
+    const totalMin = Math.round(h * 60);
+    if (totalMin === 0) return "0 h";
+    if (totalMin < 60) return totalMin + " min";     // < 1 h -> minutes
+    const hh = Math.floor(totalMin / 60), mm = totalMin % 60;
+    return mm === 0 ? hh + " h" : hh + " h " + String(mm).padStart(2, "0"); // ex. "3 h 50"
   }
   function fmtMoney(n) {
     return new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n) + " " + devise;
@@ -107,8 +108,15 @@
   const $ = (id) => document.getElementById(id);
   const totalHeuresGlobal = entries.reduce((s, e) => s + e.heures, 0);
   const weeksElapsedGlobal = countWeeksBetween(debut, today);
-  const attenduGlobal = weeksElapsedGlobal * target;
-  const avanceGlobal = totalHeuresGlobal - attenduGlobal;
+  // Avance = basée sur les semaines TERMINÉES (la semaine en cours ne compte pas
+  // encore comme du retard tant qu'elle n'est pas finie).
+  const currentWeekStart = startOfWeek(today);
+  const completedWeeks = currentWeekStart > debut ? Math.round((currentWeekStart - debut) / (7 * 864e5)) : 0;
+  const hoursCompleted = entries
+    .filter((e) => { const w = startOfWeek(e.date); return w >= debut && w < currentWeekStart; })
+    .reduce((s, e) => s + e.heures, 0);
+  const attenduGlobal = completedWeeks * target;
+  const avanceGlobal = hoursCompleted - attenduGlobal;
 
   const prestataire = (cfg.prestataire || "").trim();
   const clientNom = (cfg.client || "").trim();
@@ -130,13 +138,22 @@
     el.style.display = clientNom ? "" : "none";
   });
   $("sousTitre").textContent = `Objectif ${fmtH(target)}/semaine · depuis le ${fmtDateLong(debut)}`;
-  $("maj").textContent = "Mis à jour le " + now.toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
+  const derniere = entries.length ? entries[entries.length - 1].date : null;
+  $("maj").textContent = derniere ? "Dernière séance : " + fmtDateLong(derniere) : "Aucune séance saisie";
 
   const chip = $("statusChip");
-  chip.classList.add(weeksElapsedGlobal === 0 ? "" : avanceGlobal >= 0 ? "ok" : "warn");
-  $("statusChipText").textContent =
-    weeksElapsedGlobal === 0 ? "Mission à venir"
-      : avanceGlobal >= 0 ? `En avance de ${fmtH(avanceGlobal)}` : `En retard de ${fmtH(Math.abs(avanceGlobal))}`;
+  if (completedWeeks === 0) {
+    $("statusChipText").textContent = "1re semaine en cours";
+  } else if (avanceGlobal > 0) {
+    chip.classList.add("ok");
+    $("statusChipText").textContent = `En avance de ${fmtH(avanceGlobal)}`;
+  } else if (avanceGlobal < 0) {
+    chip.classList.add("warn");
+    $("statusChipText").textContent = `En retard de ${fmtH(Math.abs(avanceGlobal))}`;
+  } else {
+    chip.classList.add("ok");
+    $("statusChipText").textContent = "À jour";
+  }
 
   // ---------- Animations ----------
   const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -285,10 +302,11 @@
       : `Il te reste ${fmtH(semaineReste)} à faire cette semaine.`;
 
     $("avanceCardTitle").textContent = "Avance cumulée";
-    setAvance(avanceGlobal, weeksElapsedGlobal === 0
-      ? "La mission n'a pas encore commencé."
-      : `${fmtH(totalHeures)} réalisées sur ${fmtH(attenduGlobal)} attendues (${weeksElapsedGlobal} sem.)`,
-      totalHeures, attenduGlobal, weeksElapsedGlobal === 0);
+    setAvance(avanceGlobal,
+      completedWeeks === 0
+        ? "1re semaine en cours — rien à comparer pour l'instant."
+        : `${fmtH(hoursCompleted)} réalisées sur ${fmtH(attenduGlobal)} attendues · ${completedWeeks} sem. terminée${completedWeeks > 1 ? "s" : ""}`,
+      hoursCompleted, attenduGlobal, completedWeeks === 0);
 
     // KPIs
     $("lblTotal").textContent = "Total heures réalisées";
@@ -307,7 +325,6 @@
     }
     byWeek.forEach((w, k) => { if (!weekRows.some((r) => weekKey(r.start) === k)) weekRows.push({ start: w.start, heures: w.heures }); });
 
-    renderWeeksTable(weekRows, currentWeekKey);
     renderChart(weekRows.slice().sort((a, b) => a.start - b.start).slice(-(window.innerWidth < 560 ? 8 : 12)));
     $("panelLog").style.display = "none"; // pas de détail des séances en vue Générale
   }
@@ -361,7 +378,6 @@
     });
     byWeek.forEach((wk, k) => { if (!weekRows.some((r) => weekKey(r.start) === k)) weekRows.push({ start: wk.start, heures: wk.heures }); });
 
-    renderWeeksTable(weekRows, weekKey(today));
     renderChart(weekRows.slice().sort((a, b) => a.start - b.start));
     $("panelLog").style.display = ""; // détail des séances visible dans la vue mois
     renderLog(scoped.slice(), true);
@@ -393,32 +409,6 @@
     $("avanceFill").style.width = avancePct + "%";
   }
 
-  function statusPill(h, t) {
-    if (t > 0 && h >= t) return `<span class="pill good">Atteint</span>`;
-    if (h === 0) return `<span class="pill neutral">—</span>`;
-    return `<span class="pill warn">${fmtH(t - h)}<span class="pill-extra"> manquantes</span></span>`;
-  }
-
-  function renderWeeksTable(weekRows, currentWeekKey) {
-    weekRows.sort((a, b) => b.start - a.start);
-    const tb = $("tbodyWeeks");
-    tb.innerHTML = "";
-    weekRows.forEach((r) => {
-      const objAtteint = target > 0 && r.heures >= target;
-      const isCurrent = weekKey(r.start) === currentWeekKey;
-      const tr = document.createElement("tr");
-      if (isCurrent) tr.classList.add("current");
-      tr.innerHTML = `
-        <td class="mono nowrap">${fmtRange(r.start, addDays(r.start, 6))}${isCurrent ? ' <span class="tag">en cours</span>' : ""}</td>
-        <td class="right ${objAtteint ? "good" : r.heures > 0 ? "" : "muted"}">${fmtH(r.heures)}</td>
-        <td class="right muted">${fmtH(target)}</td>
-        <td class="right">${statusPill(r.heures, target)}</td>`;
-      tb.appendChild(tr);
-    });
-    if (weekRows.length === 0)
-      tb.innerHTML = `<tr><td colspan="4" class="muted center">Aucune semaine à afficher.</td></tr>`;
-  }
-
   function renderChart(chartWeeks) {
     const chart = $("chart");
     chart.innerHTML = "";
@@ -429,7 +419,7 @@
       const wrap = document.createElement("div"); wrap.className = "bar-wrap";
       const val = document.createElement("div");
       val.className = "bar-val" + (good ? " good" : "");
-      val.textContent = w.heures > 0 ? fmtH(w.heures).replace(" h", "") : "";
+      val.textContent = w.heures > 0 ? fmtH(w.heures) : "";
       const bar = document.createElement("div");
       bar.className = "bar" + (good ? " good" : "");
       const finalH = (w.heures / maxH) * 100 + "%";
@@ -462,6 +452,10 @@
       }
     });
     if (chartWeeks.length) {
+      const mid = document.createElement("div"); mid.className = "chart-grid";
+      mid.style.bottom = ((target / 2) / maxH) * 100 + "%";
+      mid.innerHTML = `<span>${fmtH(target / 2)}</span>`;
+      chart.appendChild(mid);
       const line = document.createElement("div"); line.className = "chart-target";
       line.style.bottom = (target / maxH) * 100 + "%";
       line.innerHTML = `<span>objectif ${fmtH(target)}</span>`;
