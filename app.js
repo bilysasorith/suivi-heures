@@ -127,10 +127,9 @@
     $("monogram").textContent = (prestataire[0] || "•").toUpperCase();
     if (eyebrowEl) eyebrowEl.style.display = "";
   } else {
-    // Pas de nom : titre générique, monogramme neutre, on masque l'eyebrow (redondant)
+    // Pas de nom : titre générique, on garde le logo SVG (dans le HTML), on masque l'eyebrow
     $("titrePrestataire").textContent = "Suivi des heures";
     $("titreClient").textContent = "";
-    $("monogram").textContent = "⏱️";
     if (eyebrowEl) eyebrowEl.style.display = "none";
   }
   // Masque le séparateur et le client si aucun client n'est renseigné
@@ -483,10 +482,17 @@
         const tot = sorted.filter((x) => weekKey(x.date) === wk).reduce((a, x) => a + x.heures, 0);
         const hr = document.createElement("tr");
         hr.className = "wk-head";
-        hr.innerHTML = `<td colspan="2">Semaine du ${fmtDateShort(s)} au ${fmtDateShort(addDays(s, 6))}</td><td class="right">${fmtH(tot)}</td>`;
+        hr.dataset.wk = wk;
+        hr.innerHTML = `<td colspan="2"><span class="wk-caret">▾</span>Semaine du ${fmtDateShort(s)} au ${fmtDateShort(addDays(s, 6))}</td><td class="right">${fmtH(tot)}</td>`;
+        hr.addEventListener("click", () => {
+          const collapsed = hr.classList.toggle("collapsed");
+          tb.querySelectorAll(`tr.wk-row[data-wk="${wk}"]`).forEach((r) => { r.style.display = collapsed ? "none" : ""; });
+        });
         tb.appendChild(hr);
       }
       const tr = document.createElement("tr");
+      tr.className = "wk-row";
+      tr.dataset.wk = wk;
       tr.innerHTML = `
         <td class="mono nowrap">${fmtDateShort(e.date)}</td>
         <td class="right mono">${fmtH(e.heures)}</td>
