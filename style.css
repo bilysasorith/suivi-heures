@@ -353,5 +353,18 @@ footer code { background: var(--card); border: 1px solid var(--line); padding: 2
 .chart-tip.show { opacity: 1; transform: translateY(0); }
 .chart-tip b { color: var(--brand-2); }
 
+/* ---------- Bloc secret : qui me sollicite le plus ---------- */
+.monogram { cursor: pointer; }
+.soll-row { display: grid; grid-template-columns: 170px 1fr auto; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.soll-row:last-child { border-bottom: none; }
+.soll-name { font-weight: 600; color: var(--ink); font-size: 14px; }
+.soll-bar-wrap { background: var(--brand-soft); border-radius: 999px; height: 10px; overflow: hidden; }
+.soll-bar { height: 100%; background: linear-gradient(90deg, var(--brand-2), var(--brand)); border-radius: 999px; transition: width .8s cubic-bezier(.2,.8,.2,1); }
+.soll-val { font-family: var(--f-display, inherit); font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+@media (max-width: 560px) {
+  .soll-row { grid-template-columns: 1fr auto; gap: 6px 12px; }
+  .soll-bar-wrap { grid-column: 1 / -1; order: 3; }
+}
+
 /* ---------- Confettis ---------- */
 #confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 80; display: none; }

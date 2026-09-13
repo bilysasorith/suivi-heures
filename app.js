@@ -29,6 +29,7 @@
     return `${d === 1 ? "1er" : d} ${MOIS[date.getMonth()]} ${date.getFullYear()}`;
   }
   function fmtDateShort(date) { return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }); }
+  function fmtDateDay(date) { return date.toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "short" }); } // "dim. 13 sept."
   function weekKey(date) {
     const s = startOfWeek(date);
     return `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, "0")}-${String(s.getDate()).padStart(2, "0")}`;
@@ -108,15 +109,15 @@
   // ---------- Header (toujours global) ----------
   const $ = (id) => document.getElementById(id);
   const weeksElapsedGlobal = countWeeksBetween(debut, today);
-  // Avance = basée sur les semaines TERMINÉES (la semaine en cours ne compte pas
-  // encore comme du retard tant qu'elle n'est pas finie).
+  // Avance = TOTAL réalisé − objectif des semaines TERMINÉES.
+  // Ainsi la semaine en cours n'ajoute jamais de "retard" (son objectif n'est pas
+  // encore dû), mais ses heures sont créditées ("en banque") → un bon lundi→dimanche
+  // fait remonter l'avance.
+  const totalHeuresGlobal = entries.reduce((s, e) => s + e.heures, 0);
   const currentWeekStart = startOfWeek(today);
   const completedWeeks = currentWeekStart > debut ? Math.round((currentWeekStart - debut) / (7 * 864e5)) : 0;
-  const hoursCompleted = entries
-    .filter((e) => { const w = startOfWeek(e.date); return w >= debut && w < currentWeekStart; })
-    .reduce((s, e) => s + e.heures, 0);
   const attenduGlobal = completedWeeks * target;
-  const avanceGlobal = hoursCompleted - attenduGlobal;
+  const avanceGlobal = totalHeuresGlobal - attenduGlobal;
 
   const prestataire = (cfg.prestataire || "").trim();
   const clientNom = (cfg.client || "").trim();
@@ -304,9 +305,9 @@
     $("avanceCardTitle").textContent = "Avance cumulée";
     setAvance(avanceGlobal,
       completedWeeks === 0
-        ? "1re semaine en cours — rien à comparer pour l'instant."
-        : `${fmtH(hoursCompleted)} réalisées sur ${fmtH(attenduGlobal)} attendues · ${completedWeeks} sem. terminée${completedWeeks > 1 ? "s" : ""}`,
-      hoursCompleted, attenduGlobal, completedWeeks === 0);
+        ? `${fmtH(totalHeuresGlobal)} réalisées (1re semaine en cours)`
+        : `${fmtH(totalHeuresGlobal)} réalisées · ${fmtH(attenduGlobal)} attendues à ce stade (${completedWeeks} sem. terminée${completedWeeks > 1 ? "s" : ""})`,
+      totalHeuresGlobal, attenduGlobal, completedWeeks === 0);
 
     // KPIs
     $("lblTotal").textContent = "Total heures réalisées";
@@ -499,7 +500,7 @@
       tr.className = "wk-row";
       tr.dataset.wk = wk;
       tr.innerHTML = `
-        <td class="mono nowrap">${fmtDateShort(e.date)}</td>
+        <td class="mono nowrap">${fmtDateDay(e.date)}</td>
         <td class="right mono">${fmtH(e.heures)}</td>
         <td>${escapeHtml(e.note)}</td>`;
       tb.appendChild(tr);
@@ -509,6 +510,52 @@
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
+
+  // ---------- Bloc secret : qui me sollicite le plus (clic sur le logo) ----------
+  // Extrait les demandeurs d'une note : "pour X", "avec X", "à la demande de X"…
+  function extractSolicitors(note) {
+    const out = [];
+    const re = /(?:à la demande de|de la part de|pour|avec)\s+([^+(),.;?!]+)/gi;
+    let m;
+    while ((m = re.exec(note))) {
+      m[1].split(/\s+et\s+/).forEach((part) => {
+        // coupe au prochain mot déclencheur ("Anne pour l'article…" -> "Anne")
+        let name = part.split(/\s+(?:pour|avec|à la demande de|de la part de)\s+/i)[0]
+          .trim().replace(/[.,;)]+$/, "").trim();
+        if (!name || name.length < 2) return;
+        if (/équipe|equipe/i.test(name)) { out.push("Équipe communication"); return; }
+        name = name.split(/\s+/).slice(0, 3).join(" "); // au plus 3 mots (prénom + nom)
+        out.push(name);
+      });
+    }
+    return [...new Set(out)];
+  }
+  function renderSolliciteurs() {
+    const host = $("solliciteurs");
+    const map = new Map();
+    entries.forEach((e) => extractSolicitors(e.note).forEach((name) => {
+      const cur = map.get(name) || { name, heures: 0, count: 0 };
+      cur.heures += e.heures; cur.count += 1; map.set(name, cur);
+    }));
+    const list = [...map.values()].sort((a, b) => b.heures - a.heures);
+    if (!list.length) { host.innerHTML = `<div class="muted center" style="padding:16px">Aucun demandeur identifié.</div>`; return; }
+    const max = list[0].heures || 1;
+    host.innerHTML = list.map((s) => `
+      <div class="soll-row">
+        <div class="soll-name">${escapeHtml(s.name)}</div>
+        <div class="soll-bar-wrap"><div class="soll-bar" style="width:${Math.max(5, (s.heures / max) * 100)}%"></div></div>
+        <div class="soll-val">${fmtH(s.heures)} · ${s.count} tâche${s.count > 1 ? "s" : ""}</div>
+      </div>`).join("");
+  }
+  (function secret() {
+    const mono = $("monogram"), panel = $("panelSolliciteurs");
+    if (!mono || !panel) return;
+    mono.addEventListener("click", () => {
+      const show = panel.hidden;
+      panel.hidden = !show;
+      if (show) { renderSolliciteurs(); panel.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    });
+  })();
 
   // Ombre de la barre d'onglets quand on scrolle
   window.addEventListener("scroll", () => {
