@@ -38,5 +38,9 @@ window.SUIVI = {
     { date: "2026-09-08", heures: 2,   note: "Accès et analyse fichier Marketplace PCL à la demande de Katrin TILLMANS" },
     { date: "2026-09-08", heures: 1,   note: "Extraction, requête SQL WS EE + call avec Philippe LOPEZ + début tutoriel DBeaver" },
     { date: "2026-09-09", heures: 1.5, note: "Requête SQL Ventilation par type d'inscription" },
+    { date: "2026-09-09", heures: 0.33, note: "Vérification chiffre Gard pour Philippe" },
+    { date: "2026-09-11", heures: 0.33, note: "Vérification chiffre article coaching salle pour Delphine" },
+    { date: "2026-09-12", heures: 4,    note: "Script Baromètre S1 2026 des principaux territoires économiques français — partie 1 (pour Katrin TILLMANS)" },
+    { date: "2026-09-13", heures: 3,    note: "Finalisation Baromètre S1 2026 des principaux territoires économiques français — partie 2 (pour Katrin TILLMANS)" },
   ],
 };
