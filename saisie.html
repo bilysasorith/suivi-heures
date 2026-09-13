@@ -91,21 +91,26 @@
       const cfg = (window.SUIVI && window.SUIVI.config) || {};
       const $ = (id) => document.getElementById(id);
 
-      // Liste de travail (repart de data.js à chaque ouverture)
+      // Liste de travail (repart de data.js à chaque ouverture). Unité interne : minutes.
       let items = ((window.SUIVI && window.SUIVI.heures) || [])
-        .filter((e) => e && e.date && Number(e.heures) > 0)
-        .map((e) => ({ date: String(e.date), heures: Number(e.heures), note: e.note || "" }));
+        .map((e) => {
+          if (!e || !e.date) return null;
+          const min = e.min != null ? Math.round(Number(e.min)) : Math.round(Number(e.heures) * 60);
+          if (!(min > 0)) return null;
+          return { date: String(e.date), min, note: e.note || "" };
+        })
+        .filter(Boolean);
 
-      // "1h30", "45min", "2", "1,5" -> heures décimales (arrondi à la minute)
+      // "1h30", "45min", "2", "1,5" -> minutes (entier)
       function parseDuree(s) {
         s = String(s || "").trim().toLowerCase().replace(",", ".").replace(/\s+/g, "");
         if (!s) return null;
         let m = s.match(/^(\d+)h(\d{1,2})?$/);            // 1h30 / 1h
-        if (m) return Math.round((+m[1] + (m[2] ? +m[2] / 60 : 0)) * 100) / 100;
+        if (m) return +m[1] * 60 + (m[2] ? +m[2] : 0);
         m = s.match(/^(\d+)(?:min|m)$/);                   // 45min / 45m
-        if (m) return Math.round((+m[1] / 60) * 100) / 100;
-        m = s.match(/^\d+(\.\d+)?$/);                      // 2 / 1.5
-        if (m) return Math.round(parseFloat(s) * 100) / 100;
+        if (m) return +m[1];
+        m = s.match(/^\d+(\.\d+)?$/);                      // 2 / 1.5 (en heures)
+        if (m) return Math.round(parseFloat(s) * 60);
         return null;
       }
       function fmtH(h) {
@@ -126,7 +131,7 @@
         const tb = $("rows"); tb.innerHTML = "";
         items.forEach((e, i) => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td class="mono nowrap">${fmtDate(e.date)}</td><td class="right mono">${fmtH(e.heures)}</td><td>${escapeHtml(e.note)}</td>`;
+          tr.innerHTML = `<td class="mono nowrap">${fmtDate(e.date)}</td><td class="right mono">${fmtH(e.min / 60)}</td><td>${escapeHtml(e.note)}</td>`;
           const td = document.createElement("td"); td.className = "right";
           const b = document.createElement("button"); b.className = "rm"; b.textContent = "✕"; b.title = "Supprimer";
           b.addEventListener("click", () => { items.splice(i, 1); render(); });
@@ -137,7 +142,11 @@
 
       function genFile() {
         const asc = items.slice().sort((a, b) => (a.date < b.date ? -1 : 1));
-        const lignes = asc.map((e) => `    { date: ${JSON.stringify(e.date)}, heures: ${e.heures}, note: ${JSON.stringify(e.note)} },`).join("\n");
+        const lignes = asc.map((e) => {
+          // minutes exactes si < 1h ou non multiple de 15 min ; sinon en heures (plus lisible)
+          const dur = e.min % 15 === 0 ? `heures: ${e.min / 60}` : `min: ${e.min}`;
+          return `    { date: ${JSON.stringify(e.date)}, ${dur}, note: ${JSON.stringify(e.note)} },`;
+        }).join("\n");
         return `/* Fichier généré par saisie.html — Suivi des heures */
 window.SUIVI = {
   config: ${JSON.stringify(cfg, null, 2).replace(/\n/g, "\n  ")},
@@ -155,11 +164,11 @@ ${lignes}
 
       function add() {
         const date = $("f-date").value;
-        const h = parseDuree($("f-duree").value);
+        const min = parseDuree($("f-duree").value);
         const note = $("f-note").value.trim();
         if (!date) { $("f-date").focus(); return; }
-        if (h == null || h <= 0) { $("f-duree").focus(); $("f-duree").select(); return; }
-        items.push({ date, heures: h, note });
+        if (min == null || min <= 0) { $("f-duree").focus(); $("f-duree").select(); return; }
+        items.push({ date, min, note });
         $("f-duree").value = ""; $("f-note").value = "";
         render();
         $("f-note").focus();

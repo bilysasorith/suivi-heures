@@ -52,10 +52,13 @@
 
   const entries = (DATA.heures || [])
     .map((e) => {
-      if (!e || !(Number(e.heures) > 0)) return null;
+      if (!e) return null;
+      // durée : `min` (minutes exactes) prioritaire, sinon `heures` (décimal)
+      const heures = e.min != null ? Number(e.min) / 60 : Number(e.heures);
+      if (!(heures > 0)) return null;
       const d = parseDate(e.date);
       if (!d) { console.warn("Séance ignorée (date invalide) :", e); return null; }
-      return { date: d, heures: Number(e.heures), note: e.note || "" };
+      return { date: d, heures, note: e.note || "" };
     })
     .filter(Boolean)
     .sort((a, b) => a.date - b.date);

@@ -6,6 +6,8 @@
       Format : { date: "AAAA-MM-JJ", heures: 2.5, note: "Ce que j'ai fait" }
       - date   : le jour où tu as travaillé (ex "2026-09-03")
       - heures : nombre d'heures (décimales OK : 1.5 = 1h30)
+      - min    : alternative à `heures`, en minutes exactes (ex : min: 20).
+                 À préférer pour les durées < 1h (évite les arrondis).
       - note   : courte description (facultatif)
    3) Enregistre, puis "commit + push" sur GitHub (voir README).
    ============================================================ */
@@ -34,12 +36,12 @@ window.SUIVI = {
     { date: "2026-09-04", heures: 1,   note: "Réunion CNGTC" },
     { date: "2026-09-06", heures: 2,   note: "PPT coaching et salle de sport" },
     { date: "2026-09-07", heures: 0.5, note: "Échanges avec Nicolas François et Philippe LOPEZ + test requête SQL" },
-    { date: "2026-09-07", heures: 0.33, note: "Légère correction PPT + check fichier prévention (présence SIREN ou secteur ?)" },
+    { date: "2026-09-07", min: 20, note: "Légère correction PPT + check fichier prévention (présence SIREN ou secteur ?)" },
     { date: "2026-09-08", heures: 2,   note: "Accès et analyse fichier Marketplace PCL à la demande de Katrin TILLMANS" },
     { date: "2026-09-08", heures: 1,   note: "Extraction, requête SQL WS EE + call avec Philippe LOPEZ + début tutoriel DBeaver" },
     { date: "2026-09-09", heures: 1.5, note: "Requête SQL Ventilation par type d'inscription" },
-    { date: "2026-09-09", heures: 0.33, note: "Vérification chiffre Gard pour Philippe" },
-    { date: "2026-09-11", heures: 0.33, note: "Vérification chiffre article coaching salle pour Delphine" },
+    { date: "2026-09-09", min: 20, note: "Vérification chiffre Gard pour Philippe" },
+    { date: "2026-09-11", min: 20, note: "Vérification chiffre article coaching salle pour Delphine" },
     { date: "2026-09-12", heures: 4,    note: "Script Baromètre S1 2026 des principaux territoires économiques français — partie 1 (pour Katrin TILLMANS)" },
     { date: "2026-09-13", heures: 3,    note: "Finalisation Baromètre S1 2026 des principaux territoires économiques français — partie 2 (pour Katrin TILLMANS)" },
   ],
