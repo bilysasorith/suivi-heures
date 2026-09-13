@@ -549,15 +549,23 @@
     if (!list.length) { host.innerHTML = `<div class="muted center" style="padding:16px">Aucun demandeur identifié.</div>`; return; }
     const total = list.reduce((s, x) => s + x.heures, 0) || 1;
 
-    // Camembert (donut) en SVG
-    const r = 70, cx = 90, cy = 90, circ = 2 * Math.PI * r, sw = 30;
-    let acc = 0;
-    const segs = list.map((s, i) => {
-      const f = s.heures / total, dash = f * circ;
-      const seg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${PALETTE[i % PALETTE.length]}" stroke-width="${sw}" stroke-dasharray="${dash.toFixed(2)} ${(circ - dash).toFixed(2)}" stroke-dashoffset="${(-acc * circ).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"></circle>`;
-      acc += f;
-      return seg;
-    }).join("");
+    // Camembert (donut) en SVG : parts pleines juxtaposées (pas de chevauchement)
+    const cx = 90, cy = 90, R = 82, Ri = 50;
+    const pt = (ang, rad) => [cx + rad * Math.cos(ang), cy + rad * Math.sin(ang)];
+    let segs;
+    if (list.length === 1) {
+      segs = `<circle cx="${cx}" cy="${cy}" r="${(R + Ri) / 2}" fill="none" stroke="${PALETTE[0]}" stroke-width="${R - Ri}"></circle>`;
+    } else {
+      let a0 = -Math.PI / 2; // départ en haut
+      segs = list.map((s, i) => {
+        const a1 = a0 + (s.heures / total) * 2 * Math.PI;
+        const large = a1 - a0 > Math.PI ? 1 : 0;
+        const [x0o, y0o] = pt(a0, R), [x1o, y1o] = pt(a1, R), [x1i, y1i] = pt(a1, Ri), [x0i, y0i] = pt(a0, Ri);
+        const d = `M ${x0o.toFixed(2)} ${y0o.toFixed(2)} A ${R} ${R} 0 ${large} 1 ${x1o.toFixed(2)} ${y1o.toFixed(2)} L ${x1i.toFixed(2)} ${y1i.toFixed(2)} A ${Ri} ${Ri} 0 ${large} 0 ${x0i.toFixed(2)} ${y0i.toFixed(2)} Z`;
+        a0 = a1;
+        return `<path d="${d}" fill="${PALETTE[i % PALETTE.length]}"></path>`;
+      }).join("");
+    }
     const legend = list.map((s, i) => `
       <div class="pie-row">
         <span class="pie-dot" style="background:${PALETTE[i % PALETTE.length]}"></span>
