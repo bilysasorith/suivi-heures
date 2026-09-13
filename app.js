@@ -512,6 +512,12 @@
   }
 
   // ---------- Bloc secret : qui me sollicite le plus (clic sur le logo) ----------
+  // Personnes rattachées à l'équipe communication (comptées comme une seule entité)
+  const EQUIPE_COM = ["anne", "sarra", "delphine"];
+  // Alias : rattache un nom à un demandeur canonique
+  const ALIAS = { "nicolas françois": "Philippe LOPEZ" };
+  const PALETTE = ["#2b57e6", "#0f9d63", "#f2a03d", "#7c5cff", "#e05a8c", "#17b8a6", "#5b8bff", "#b0466e", "#8a94a6"];
+
   // Extrait les demandeurs d'une note : "pour X", "avec X", "à la demande de X"…
   function extractSolicitors(note) {
     const out = [];
@@ -523,8 +529,10 @@
         let name = part.split(/\s+(?:pour|avec|à la demande de|de la part de)\s+/i)[0]
           .trim().replace(/[.,;)]+$/, "").trim();
         if (!name || name.length < 2) return;
-        if (/équipe|equipe/i.test(name)) { out.push("Équipe communication"); return; }
         name = name.split(/\s+/).slice(0, 3).join(" "); // au plus 3 mots (prénom + nom)
+        const low = name.toLowerCase();
+        if (/équipe|equipe/.test(low) || EQUIPE_COM.includes(low.split(/\s+/)[0])) name = "Équipe communication";
+        else if (ALIAS[low]) name = ALIAS[low];
         out.push(name);
       });
     }
@@ -539,13 +547,32 @@
     }));
     const list = [...map.values()].sort((a, b) => b.heures - a.heures);
     if (!list.length) { host.innerHTML = `<div class="muted center" style="padding:16px">Aucun demandeur identifié.</div>`; return; }
-    const max = list[0].heures || 1;
-    host.innerHTML = list.map((s) => `
-      <div class="soll-row">
-        <div class="soll-name">${escapeHtml(s.name)}</div>
-        <div class="soll-bar-wrap"><div class="soll-bar" style="width:${Math.max(5, (s.heures / max) * 100)}%"></div></div>
-        <div class="soll-val">${fmtH(s.heures)} · ${s.count} tâche${s.count > 1 ? "s" : ""}</div>
+    const total = list.reduce((s, x) => s + x.heures, 0) || 1;
+
+    // Camembert (donut) en SVG
+    const r = 70, cx = 90, cy = 90, circ = 2 * Math.PI * r, sw = 30;
+    let acc = 0;
+    const segs = list.map((s, i) => {
+      const f = s.heures / total, dash = f * circ;
+      const seg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${PALETTE[i % PALETTE.length]}" stroke-width="${sw}" stroke-dasharray="${dash.toFixed(2)} ${(circ - dash).toFixed(2)}" stroke-dashoffset="${(-acc * circ).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"></circle>`;
+      acc += f;
+      return seg;
+    }).join("");
+    const legend = list.map((s, i) => `
+      <div class="pie-row">
+        <span class="pie-dot" style="background:${PALETTE[i % PALETTE.length]}"></span>
+        <span class="pie-name">${escapeHtml(s.name)}</span>
+        <span class="pie-val">${fmtH(s.heures)} · ${Math.round((s.heures / total) * 100)}%</span>
       </div>`).join("");
+    host.innerHTML = `
+      <div class="pie-wrap">
+        <svg class="pie" viewBox="0 0 180 180" width="180" height="180" aria-hidden="true">
+          ${segs}
+          <text x="90" y="86" text-anchor="middle" class="pie-center-num">${list.length}</text>
+          <text x="90" y="104" text-anchor="middle" class="pie-center-lbl">demandeurs</text>
+        </svg>
+        <div class="pie-legend">${legend}</div>
+      </div>`;
   }
   (function secret() {
     const mono = $("monogram"), panel = $("panelSolliciteurs");

@@ -353,18 +353,20 @@ footer code { background: var(--card); border: 1px solid var(--line); padding: 2
 .chart-tip.show { opacity: 1; transform: translateY(0); }
 .chart-tip b { color: var(--brand-2); }
 
-/* ---------- Bloc secret : qui me sollicite le plus ---------- */
+/* ---------- Bloc secret : qui me sollicite le plus (camembert) ---------- */
 .monogram { cursor: pointer; }
-.soll-row { display: grid; grid-template-columns: 170px 1fr auto; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
-.soll-row:last-child { border-bottom: none; }
-.soll-name { font-weight: 600; color: var(--ink); font-size: 14px; }
-.soll-bar-wrap { background: var(--brand-soft); border-radius: 999px; height: 10px; overflow: hidden; }
-.soll-bar { height: 100%; background: linear-gradient(90deg, var(--brand-2), var(--brand)); border-radius: 999px; transition: width .8s cubic-bezier(.2,.8,.2,1); }
-.soll-val { font-family: var(--f-display, inherit); font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
-@media (max-width: 560px) {
-  .soll-row { grid-template-columns: 1fr auto; gap: 6px 12px; }
-  .soll-bar-wrap { grid-column: 1 / -1; order: 3; }
-}
+.pie-wrap { display: flex; gap: 26px; align-items: center; flex-wrap: wrap; }
+.pie { flex: none; }
+.pie circle { transition: stroke-dasharray .8s cubic-bezier(.2,.8,.2,1); }
+.pie-center-num { font-weight: 800; font-size: 26px; fill: var(--ink); }
+.pie-center-lbl { font-size: 10px; fill: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.pie-legend { flex: 1; min-width: 220px; display: flex; flex-direction: column; }
+.pie-row { display: grid; grid-template-columns: auto 1fr auto; gap: 11px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.pie-row:last-child { border-bottom: none; }
+.pie-dot { width: 12px; height: 12px; border-radius: 4px; }
+.pie-name { font-weight: 600; color: var(--ink); font-size: 14px; }
+.pie-val { color: var(--muted); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .pie-wrap { justify-content: center; } .pie-legend { min-width: 100%; } }
 
 /* ---------- Confettis ---------- */
 #confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 80; display: none; }
