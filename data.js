@@ -44,5 +44,6 @@ window.SUIVI = {
     { date: "2026-09-11", min: 20, note: "Vérification chiffre article coaching salle pour Delphine" },
     { date: "2026-09-12", heures: 4,    note: "Script Baromètre S1 2026 des principaux territoires économiques français — partie 1 (pour Katrin TILLMANS)" },
     { date: "2026-09-13", heures: 3,    note: "Finalisation Baromètre S1 2026 des principaux territoires économiques français — partie 2 (pour Katrin TILLMANS)" },
+    { date: "2026-09-14", heures: 0.75, note: "Requête SQL EE par client pour Philippe LOPEZ" },
   ],
 };
