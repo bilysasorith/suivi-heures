@@ -45,5 +45,7 @@ window.SUIVI = {
     { date: "2026-09-12", heures: 4,    note: "Script Baromètre S1 2026 des principaux territoires économiques français — partie 1 (pour Katrin TILLMANS)" },
     { date: "2026-09-13", heures: 3,    note: "Finalisation Baromètre S1 2026 des principaux territoires économiques français — partie 2 (pour Katrin TILLMANS)" },
     { date: "2026-09-14", heures: 0.75, note: "Requête SQL EE par client pour Philippe LOPEZ" },
+    { date: "2026-09-16", min: 30, note: "Extraction hors RCS pour Philippe LOPEZ" },
+    { date: "2026-09-16", heures: 1, note: "Requête SQL pour Philippe DAO" },
   ],
 };
