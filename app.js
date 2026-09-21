@@ -521,7 +521,8 @@
   // Extrait les demandeurs d'une note : "pour X", "avec X", "à la demande de X"…
   function extractSolicitors(note) {
     const out = [];
-    const re = /(?:à la demande de|de la part de|pour|avec)\s+([^+(),.;?!]+)/gi;
+    // "de + Majuscule" (nom propre) reconnu, mais pas "de la/des …". Pas de flag i (sinon la classe majuscule matcherait tout).
+    const re = /(?:à la demande de|de la part de|pour|avec|de(?=\s+[A-ZÉÈÀÂÎÔÜ]))\s+([^+(),.;?!]+)/g;
     let m;
     while ((m = re.exec(note))) {
       m[1].split(/\s+et\s+/).forEach((part) => {

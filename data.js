@@ -47,6 +47,6 @@ window.SUIVI = {
     { date: "2026-09-14", heures: 0.75, note: "Requête SQL EE par client pour Philippe LOPEZ" },
     { date: "2026-09-16", min: 30, note: "Extraction hors RCS pour Philippe LOPEZ" },
     { date: "2026-09-16", heures: 1, note: "Requête SQL pour Philippe DAO" },
-    { date: "2026-09-22", heures: 2, note: "Analyse PPT pour Philippe LOPEZ" },
+    { date: "2026-09-22", heures: 2, note: "Analyse PPT de Philippe LOPEZ" },
   ],
 };
