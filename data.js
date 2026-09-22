@@ -47,7 +47,8 @@ window.SUIVI = {
     { date: "2026-09-14", heures: 0.75, note: "Requête SQL EE par client pour Philippe LOPEZ" },
     { date: "2026-09-16", min: 30, note: "Extraction hors RCS pour Philippe LOPEZ" },
     { date: "2026-09-16", heures: 1, note: "Requête SQL pour Philippe DAO" },
-    { date: "2026-09-22", heures: 2, note: "Analyse PPT de Philippe LOPEZ" },
-    { date: "2026-09-22", min: 20, note: "Point réunion avec Jean-Baptiste stats CNGTC" },
+    { date: "2026-09-22", heures: 2, note: "Analyse PPT de Philippe LOPEZ + ticket pour François NICOLAS" },
+    { date: "2026-09-22", min: 20, note: "Point réunion stats CNGTC avec Jean-Baptiste" },
+    { date: "2026-09-22", heures: 2.5, note: "Compréhension et analyse de l'écart d'extraction avec Borhane" },
   ],
 };
