@@ -50,5 +50,10 @@ window.SUIVI = {
     { date: "2026-09-22", heures: 2, note: "Analyse PPT de Philippe LOPEZ + ticket pour François NICOLAS" },
     { date: "2026-09-22", min: 20, note: "Point réunion stats CNGTC avec Jean-Baptiste" },
     { date: "2026-09-22", heures: 2.5, note: "Compréhension et analyse de l'écart d'extraction avec Borhane" },
+    { date: "2026-09-24", heures: 1.5, note: "Essai d'extraction avec Borhane (pour Philippe DAO)" },
+    { date: "2026-09-27", heures: 1, note: "Reformulation du problème WS EE" },
+    { date: "2026-09-28", min: 30, note: "Extraction WS EE CA" },
+    { date: "2026-09-28", heures: 1, note: "Voir requête SQL avec Nicolas François" },
+    { date: "2026-09-28", min: 30, note: "Extraction Dirigeants" },
   ],
 };
