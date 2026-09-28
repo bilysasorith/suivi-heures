@@ -79,7 +79,10 @@
   }
 
   const tabsEl = document.getElementById("tabs");
-  const isFuture = (mm) => mm.y > today.getFullYear() || (mm.y === today.getFullYear() && mm.m > today.getMonth());
+  // Un mois est "à venir" (désactivé) seulement s'il est après le mois de la SEMAINE en cours
+  // (règle ISO du jeudi) — ainsi la semaine à cheval fin de mois active déjà le mois suivant.
+  const nowOwner = ownerMonth(today);
+  const isFuture = (mm) => mm.y > nowOwner.y || (mm.y === nowOwner.y && mm.m > nowOwner.m);
   const tabDefs = [{ id: "general", label: "Général" }].concat(
     months.map((mm) => ({ id: `${mm.y}-${mm.m}`, label: MOIS_COURT[mm.m] + " " + String(mm.y).slice(2), scope: mm, future: isFuture(mm) }))
   );
