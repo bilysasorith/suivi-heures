@@ -56,5 +56,7 @@ window.SUIVI = {
     { date: "2026-09-28", heures: 1, note: "Voir requête SQL avec Nicolas François" },
     { date: "2026-09-28", min: 30, note: "Extraction Dirigeants" },
     { date: "2026-09-28", min: 30, note: "Extraction WS EE CA" },
+    { date: "2026-09-29", heures: 1, note: "Organisation et cadrage des prochains articles, avec Delphine et Anne" },
+    { date: "2026-09-29", min: 30, note: "Extraction dirigeant étranger pour Philippe DAO" },
   ],
 };
