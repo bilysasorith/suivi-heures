@@ -112,14 +112,15 @@
   // ---------- Header (toujours global) ----------
   const $ = (id) => document.getElementById(id);
   const weeksElapsedGlobal = countWeeksBetween(debut, today);
-  // Avance = TOTAL réalisé − objectif des semaines TERMINÉES.
-  // Ainsi la semaine en cours n'ajoute jamais de "retard" (son objectif n'est pas
-  // encore dû), mais ses heures sont créditées ("en banque") → un bon lundi→dimanche
-  // fait remonter l'avance.
+  const objMensuel = Number(cfg.objectifMensuel) || 40;
+  // Avance = TOTAL réalisé − (objectif mensuel × mois TERMINÉS).
+  // Un mois est "terminé" quand la semaine en cours appartient déjà à un mois postérieur
+  // (règle ISO du jeudi). Le mois en cours n'ajoute pas de "retard" ; ses heures sont
+  // créditées ("en banque") → un bon mois fait remonter l'avance.
   const totalHeuresGlobal = entries.reduce((s, e) => s + e.heures, 0);
-  const currentWeekStart = startOfWeek(today);
-  const completedWeeks = currentWeekStart > debut ? Math.round((currentWeekStart - debut) / (7 * 864e5)) : 0;
-  const attenduGlobal = completedWeeks * target;
+  const idxOwner = months.findIndex((mm) => mm.y === nowOwner.y && mm.m === nowOwner.m);
+  const completedMonths = idxOwner === -1 ? months.length : idxOwner;
+  const attenduGlobal = completedMonths * objMensuel;
   const avanceGlobal = totalHeuresGlobal - attenduGlobal;
 
   const prestataire = (cfg.prestataire || "").trim();
@@ -140,13 +141,13 @@
   document.querySelectorAll("h1 .sep, h1 .client").forEach((el) => {
     el.style.display = clientNom ? "" : "none";
   });
-  $("sousTitre").textContent = `Objectif ${fmtH(target)}/semaine · depuis le ${fmtDateLong(debut)}`;
+  $("sousTitre").textContent = `Objectif ${fmtH(objMensuel)}/mois · ~${fmtH(target)}/semaine · depuis le ${fmtDateLong(debut)}`;
   const derniere = entries.length ? entries[entries.length - 1].date : null;
   $("maj").textContent = derniere ? "Dernière séance : " + fmtDateLong(derniere) : "Aucune séance saisie";
 
   const chip = $("statusChip");
-  if (completedWeeks === 0) {
-    $("statusChipText").textContent = "1re semaine en cours";
+  if (completedMonths === 0) {
+    $("statusChipText").textContent = "1er mois en cours";
   } else if (avanceGlobal > 0) {
     chip.classList.add("ok");
     $("statusChipText").textContent = `En avance de ${fmtH(avanceGlobal)}`;
@@ -307,10 +308,10 @@
 
     $("avanceCardTitle").textContent = "Avance cumulée";
     setAvance(avanceGlobal,
-      completedWeeks === 0
-        ? `${fmtH(totalHeuresGlobal)} réalisées (1re semaine en cours)`
-        : `${fmtH(totalHeuresGlobal)} réalisées · ${fmtH(attenduGlobal)} attendues à ce stade (${completedWeeks} sem. terminée${completedWeeks > 1 ? "s" : ""})`,
-      totalHeuresGlobal, attenduGlobal, completedWeeks === 0);
+      completedMonths === 0
+        ? `${fmtH(totalHeuresGlobal)} réalisées (1er mois en cours)`
+        : `${fmtH(totalHeuresGlobal)} réalisées · ${fmtH(attenduGlobal)} attendues (${completedMonths} mois terminé${completedMonths > 1 ? "s" : ""} × ${fmtH(objMensuel)})`,
+      totalHeuresGlobal, attenduGlobal, completedMonths === 0);
 
     // KPIs
     $("lblTotal").textContent = "Total heures réalisées";
@@ -346,9 +347,9 @@
       if (thu.getFullYear() > scope.y || (thu.getFullYear() === scope.y && thu.getMonth() > scope.m)) break;
       if (thu.getMonth() === scope.m && thu.getFullYear() === scope.y && w >= debut) mondays.push(new Date(w));
     }
-    // Objectif du mois : override éventuel dans la config, sinon nb de semaines × cible
+    // Objectif du mois : fixe (objectifMensuel, 40 h par défaut), sauf surcharge ponctuelle
     const override = (cfg.objectifsMois || {})[scope.m + 1];
-    const objectif = override != null ? Number(override) : mondays.length * target;
+    const objectif = override != null ? Number(override) : (Number(cfg.objectifMensuel) || 40);
     const reste = Math.max(0, objectif - totalHeures);
     const pct = objectif > 0 ? Math.min(100, (totalHeures / objectif) * 100) : (totalHeures > 0 ? 100 : 0);
     const semTravaillees = Array.from(byWeek.values()).filter((x) => x.heures > 0).length;

@@ -17,16 +17,14 @@ window.SUIVI = {
     prestataire: "",               // ton nom (vide = masqué, page publique)
     client: "",                    // le client (vide = masqué, page publique)
     debut: "2026-09-01",           // 1er jour de la mission (un LUNDI de préférence)
-    heuresParSemaine: 10,          // objectif hebdomadaire
+    objectifMensuel: 40,           // OBJECTIF RÉEL : 40 h par mois (fixe, quel que soit le mois)
+    heuresParSemaine: 10,          // simple repère de rythme (~10 h/semaine)
     tarifHoraire: 30,              // € par heure
     devise: "€",
 
-    // Objectif d'un mois précis (en heures). Par défaut, l'objectif du mois
-    // = nombre de semaines du mois × heuresParSemaine. Ici on force décembre.
-    // Clé = numéro du mois (1 = janvier … 12 = décembre).
-    objectifsMois: {
-      12: 40,   // décembre : 40 h
-    },
+    // Surcharge ponctuelle de l'objectif d'un mois précis (en heures), si besoin.
+    // Clé = numéro du mois (1 = janvier … 12 = décembre). Ex : { 8: 20 } pour août.
+    objectifsMois: {},
   },
 
   // Ajoute tes séances ici (les plus récentes en haut ou en bas, peu importe) :
