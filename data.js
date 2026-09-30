@@ -57,5 +57,8 @@ window.SUIVI = {
     { date: "2026-09-28", min: 30, note: "Extraction WS EE CA" },
     { date: "2026-09-29", heures: 1, note: "Organisation et cadrage des prochains articles, avec Delphine et Anne" },
     { date: "2026-09-29", min: 30, note: "Extraction dirigeant étranger pour Philippe DAO" },
+    { date: "2026-09-30", min: 20, note: "Extraction pour Philippe DAO" },
+    { date: "2026-09-30", min: 30, note: "Retour aux interrogations de Jérôme" },
+    { date: "2026-09-30", min: 50, note: "Rattrapage réunion CNGTC lot 3" },
   ],
 };
