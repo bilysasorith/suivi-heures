@@ -60,5 +60,7 @@ window.SUIVI = {
     { date: "2026-09-30", min: 20, note: "Extraction pour Philippe DAO" },
     { date: "2026-09-30", min: 30, note: "Retour aux interrogations de Jérôme" },
     { date: "2026-09-30", min: 50, note: "Rattrapage réunion CNGTC lot 3" },
+    { date: "2026-09-30", heures: 1.5, note: "Préparation du script T3" },
+    { date: "2026-10-01", heures: 6.5, note: "PPT T3 National, Mensuel Septembre, Gard, Manche + Modification du script + Vérification et identification des anomalies/écarts" },
   ],
 };
