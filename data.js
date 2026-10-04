@@ -62,5 +62,7 @@ window.SUIVI = {
     { date: "2026-09-30", min: 50, note: "Rattrapage réunion CNGTC lot 3" },
     { date: "2026-09-30", heures: 1.5, note: "Préparation du script T3" },
     { date: "2026-10-01", heures: 6.5, note: "PPT T3 National, Mensuel Septembre, Gard, Manche + Modification du script + Vérification et identification des anomalies/écarts" },
+    { date: "2026-10-03", heures: 6, note: "Script forme juridique (trimestriel, semestriel, mensuel) Commerçant + PPT Services à la personne" },
+    { date: "2026-10-04", heures: 4, note: "PPT T3 Régions" },
   ],
 };
