@@ -66,5 +66,8 @@ window.SUIVI = {
     { date: "2026-10-02", heures: 1, note: "Script trimestriel : ajout des mois" },
     { date: "2026-10-03", heures: 6, note: "Script forme juridique (trimestriel, semestriel, mensuel) Commerçant + PPT Services à la personne" },
     { date: "2026-10-04", heures: 4, note: "PPT T3 Régions" },
+    { date: "2026-10-05", heures: 0.75, note: "Vérification article + Requête SQL dirigeant" },
+    { date: "2026-10-06", min: 30, note: "Lot 3 avec Jean-Baptiste" },
+    { date: "2026-10-06", heures: 2.5, note: "Création des XSD du Lot 3" },
   ],
 };
