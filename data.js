@@ -69,5 +69,7 @@ window.SUIVI = {
     { date: "2026-10-05", heures: 0.75, note: "Vérification article + Requête SQL dirigeant" },
     { date: "2026-10-06", min: 30, note: "Lot 3 avec Jean-Baptiste" },
     { date: "2026-10-06", heures: 2.5, note: "Création des XSD du Lot 3" },
+    { date: "2026-10-06", min: 30, note: "Requête + de 100M entreprises + mail à François car anomalie" },
+    { date: "2026-10-08", min: 30, note: "Suite requête 100M CA entreprises" },
   ],
 };
