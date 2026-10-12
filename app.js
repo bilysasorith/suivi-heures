@@ -24,6 +24,17 @@
   }
   function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
   function ownerMonth(date) { const thu = addDays(startOfWeek(date), 3); return { y: thu.getFullYear(), m: thu.getMonth() }; }
+  // Semaines (lundis) "possédées" par un mois (jeudi dans le mois), à partir du début de mission.
+  function ownedWeeks(y, m) {
+    const list = [];
+    let w = startOfWeek(new Date(y, m, 1));
+    for (let g = 0; g < 8; g++, w = addDays(w, 7)) {
+      const thu = addDays(w, 3);
+      if (thu.getFullYear() > y || (thu.getFullYear() === y && thu.getMonth() > m)) break;
+      if (thu.getFullYear() === y && thu.getMonth() === m && w >= debut) list.push(new Date(w));
+    }
+    return list;
+  }
   function fmtDateLong(date) {
     const d = date.getDate();
     return `${d === 1 ? "1er" : d} ${MOIS[date.getMonth()]} ${date.getFullYear()}`;
@@ -120,7 +131,12 @@
   const totalHeuresGlobal = entries.reduce((s, e) => s + e.heures, 0);
   const idxOwner = months.findIndex((mm) => mm.y === nowOwner.y && mm.m === nowOwner.m);
   const completedMonths = idxOwner === -1 ? months.length : idxOwner;
-  const attenduGlobal = completedMonths * objMensuel;
+  // Mois en cours au prorata : objectif × (semaines écoulées / semaines du mois)
+  const curWeeks = ownedWeeks(nowOwner.y, nowOwner.m);
+  const curWeekStart = startOfWeek(today);
+  const elapsedCurWeeks = curWeeks.filter((w) => w < curWeekStart).length;
+  const prorataMois = curWeeks.length ? objMensuel * (elapsedCurWeeks / curWeeks.length) : 0;
+  const attenduGlobal = completedMonths * objMensuel + prorataMois;
   const avanceGlobal = totalHeuresGlobal - attenduGlobal;
 
   const prestataire = (cfg.prestataire || "").trim();
@@ -146,8 +162,8 @@
   $("maj").textContent = derniere ? "Dernière séance : " + fmtDateLong(derniere) : "Aucune séance saisie";
 
   const chip = $("statusChip");
-  if (completedMonths === 0) {
-    $("statusChipText").textContent = "1er mois en cours";
+  if (attenduGlobal < 0.01) {
+    $("statusChipText").textContent = "Mission en cours";
   } else if (avanceGlobal > 0) {
     chip.classList.add("ok");
     $("statusChipText").textContent = `En avance de ${fmtH(avanceGlobal)}`;
@@ -308,10 +324,10 @@
 
     $("avanceCardTitle").textContent = "Avance cumulée";
     setAvance(avanceGlobal,
-      completedMonths === 0
-        ? `${fmtH(totalHeuresGlobal)} réalisées (1er mois en cours)`
-        : `${fmtH(totalHeuresGlobal)} réalisées · ${fmtH(attenduGlobal)} attendues (${completedMonths} mois terminé${completedMonths > 1 ? "s" : ""} × ${fmtH(objMensuel)})`,
-      totalHeuresGlobal, attenduGlobal, completedMonths === 0);
+      attenduGlobal < 0.01
+        ? `${fmtH(totalHeuresGlobal)} réalisées (mission en cours)`
+        : `${fmtH(totalHeuresGlobal)} réalisées · ${fmtH(attenduGlobal)} dues à ce stade (${fmtH(objMensuel)}/mois, mois en cours au prorata)`,
+      totalHeuresGlobal, attenduGlobal, attenduGlobal < 0.01);
 
     // KPIs
     $("lblTotal").textContent = "Total heures réalisées";
