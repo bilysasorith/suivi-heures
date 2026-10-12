@@ -73,5 +73,6 @@ window.SUIVI = {
     { date: "2026-10-08", min: 30, note: "Suite requête 100M CA entreprises" },
     { date: "2026-10-11", min: 30, note: "Vérification des chiffres articles Services à la personne" },
     { date: "2026-10-13", heures: 1, note: "Call avec Jean-Baptiste + Correction XSD et fichier Excel" },
+    { date: "2026-10-13", min: 30, note: "Requête SQL pour Philippe LOPEZ" },
   ],
 };
