@@ -73,6 +73,7 @@ window.SUIVI = {
     { date: "2026-10-08", min: 30, note: "Suite requête 100M CA entreprises" },
     { date: "2026-10-09", heures: 1, note: "Mise à jour de l'Excel Les Échos T3" },
     { date: "2026-10-09", heures: 3, note: "Interface graphique script" },
+    { date: "2026-10-10", heures: 4, note: "Interface graphique script" },
     { date: "2026-10-11", min: 30, note: "Vérification des chiffres articles Services à la personne" },
     { date: "2026-10-11", min: 30, note: "Requête SQL pour Philippe LOPEZ" },
     { date: "2026-10-12", min: 30, note: "Requête SQL pour Philippe LOPEZ" },
