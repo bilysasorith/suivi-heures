@@ -79,5 +79,11 @@ window.SUIVI = {
     { date: "2026-10-12", min: 30, note: "Requête SQL pour Philippe LOPEZ" },
     { date: "2026-10-12", heures: 1, note: "Call avec Jean-Baptiste + Correction XSD et fichier Excel" },
     { date: "2026-10-12", heures: 1, note: "Investigation cellule vide + correction dans le script + correction fichier Les Échos T3" },
+    { date: "2026-10-15", heures: 1, note: "PPT Gard Services à la personne" },
+    { date: "2026-10-16", min: 10, note: "Renvoi des PPT Régions à Anne" },
+    { date: "2026-10-19", heures: 1, note: "Vérification des chiffres et PPT pour Sébastien SAILLARD" },
+    { date: "2026-10-20", min: 10, note: "PPT T3 transmis à Anne" },
+    { date: "2026-10-20", min: 30, note: "Vérification chiffres article Gard Services à la personne" },
+    { date: "2026-10-21", min: 30, note: "PCL Année 2024/2025" },
   ],
 };
