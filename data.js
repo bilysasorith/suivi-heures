@@ -84,6 +84,8 @@ window.SUIVI = {
     { date: "2026-10-19", heures: 1, note: "Vérification des chiffres et PPT pour Sébastien SAILLARD" },
     { date: "2026-10-20", min: 10, note: "PPT T3 transmis à Anne" },
     { date: "2026-10-20", min: 30, note: "Vérification chiffres article Gard Services à la personne" },
+    { date: "2026-10-20", min: 20, note: "Appel avec Philippe" },
     { date: "2026-10-21", min: 30, note: "PCL Année 2024/2025" },
+    { date: "2026-10-22", min: 30, note: "Appel avec Jean-Baptiste" },
   ],
 };
