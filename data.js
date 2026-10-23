@@ -87,5 +87,6 @@ window.SUIVI = {
     { date: "2026-10-20", min: 20, note: "Appel avec Philippe" },
     { date: "2026-10-21", min: 30, note: "PCL Année 2024/2025" },
     { date: "2026-10-22", min: 30, note: "Appel avec Jean-Baptiste" },
+    { date: "2026-10-23", heures: 2, note: "PPT Greffe de Gap + Gap, Briançon, Embrun, Tallard, Veynes, Laragne" },
   ],
 };
