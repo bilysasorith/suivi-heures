@@ -93,5 +93,8 @@ window.SUIVI = {
     { date: "2026-10-29", heures: 1, note: "PPT féminin Var" },
     { date: "2026-10-30", heures: 1, note: "PPT S1 T3 Greffe de Chambéry, Savoie, Nîmes et ville de Nîmes" },
     { date: "2026-11-02", heures: 1.5, note: "PPT féminin PACA et national" },
+    { date: "2026-11-02", heures: 1, note: "PPT Mensuel Octobre + Anomalie Martinique + Vérification" },
+    { date: "2026-11-02", min: 30, note: "Réponse mail Statistiques T3 2026 à Philippe DAO" },
+    { date: "2026-11-02", min: 45, note: "Requête SQL pour Jérôme" },
   ],
 };
