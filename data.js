@@ -89,8 +89,9 @@ window.SUIVI = {
     { date: "2026-10-22", min: 30, note: "Appel avec Jean-Baptiste" },
     { date: "2026-10-23", heures: 2, note: "PPT Greffe de Gap + Gap, Briançon, Embrun, Tallard, Veynes, Laragne" },
     { date: "2026-10-25", heures: 2, note: "Correction stats Lot 3 pour Jean-Baptiste" },
-    { date: "2026-10-27", min: 45, note: "PPT Chambéry et ville" },
+    { date: "2026-10-27", min: 45, note: "PPT T3 Greffe de Chambéry et ville de Chambéry" },
     { date: "2026-10-29", heures: 1, note: "PPT féminin Var" },
-    { date: "2026-10-30", heures: 1, note: "PPT Chambéry, Savoie, Nîmes et ville de Nîmes" },
+    { date: "2026-10-30", heures: 1, note: "PPT S1 T3 Greffe de Chambéry, Savoie, Nîmes et ville de Nîmes" },
+    { date: "2026-11-02", heures: 1.5, note: "PPT féminin PACA et national" },
   ],
 };
