@@ -96,5 +96,6 @@ window.SUIVI = {
     { date: "2026-11-02", heures: 1, note: "PPT Mensuel Octobre + Anomalie Martinique + Vérification" },
     { date: "2026-11-02", min: 30, note: "Réponse mail Statistiques T3 2026 à Philippe DAO" },
     { date: "2026-11-02", min: 45, note: "Requête SQL pour Jérôme" },
+    { date: "2026-11-06", heures: 4.5, note: "Passage sur site" },
   ],
 };
