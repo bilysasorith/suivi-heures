@@ -97,5 +97,11 @@ window.SUIVI = {
     { date: "2026-11-02", min: 30, note: "Réponse mail Statistiques T3 2026 à Philippe DAO" },
     { date: "2026-11-02", min: 45, note: "Requête SQL pour Jérôme" },
     { date: "2026-11-06", heures: 4.5, note: "Passage sur site" },
+    { date: "2026-11-08", min: 30, note: "Requête SQL" },
+    { date: "2026-11-09", heures: 1, note: "Requête SQL" },
+    { date: "2026-11-10", min: 30, note: "Extraction BE, INSSTR et requête SQL" },
+    { date: "2026-11-12", heures: 2.5, note: "Stats santé" },
+    { date: "2026-11-13", heures: 1.25, note: "Réunion Lot 3 + Modification XSD" },
+    { date: "2026-11-13", heures: 2, note: "Extraction StockESS, croisement avec le fichier PCL/Radiation + Analyse national et PACA" },
   ],
 };
