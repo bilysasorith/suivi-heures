@@ -104,5 +104,6 @@ window.SUIVI = {
     { date: "2026-11-13", heures: 1.25, note: "Réunion Lot 3 + Modification XSD" },
     { date: "2026-11-13", heures: 2, note: "Extraction StockESS, croisement avec le fichier PCL/Radiation + Analyse national et PACA" },
     { date: "2026-11-25", heures: 1.5, note: "Requête SQL Philippe DAO Stock RCS 1M" },
+    { date: "2026-11-26", heures: 2.5, note: "Vérification extraction Stock RCS 1M CA" },
   ],
 };
